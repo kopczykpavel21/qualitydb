@@ -18,6 +18,7 @@ Notes:
 
 import re
 import time
+import random
 import logging
 import sqlite3
 import os
@@ -37,38 +38,94 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "products.db")
 
 # ── Amazon-specific thresholds ───────────────────────────────────────────────
-MIN_STARS     = 4.0    # Minimum star rating (out of 5).  4.0 = solid quality
-MIN_REVIEWS   = 50     # Minimum reviews — Amazon has many low-review products
-STOP_BELOW    = 3.8    # Stop scraping a category when stars drop below this
-MAX_PAGES     = 5      # Max pages per category (20 products/page on Amazon)
-REQUEST_DELAY = 3.0    # Seconds between requests — be polite, Amazon is sensitive
+MIN_STARS            = 4.0   # Minimum star rating (out of 5)
+MIN_REVIEWS          = 30    # Lowered — review-rank sort puts most-reviewed first anyway
+STOP_BELOW           = 3.8   # Stop scraping a category when stars drop below this
+MAX_PAGES            = 8     # Max pages per category (20 products/page on Amazon)
+REQUEST_DELAY        = 4.0   # Base seconds between page requests
+SESSION_REFRESH_EVERY = 5    # Refresh session cookies every N categories
 
-# ── Category URLs ─────────────────────────────────────────────────────────────
-# Each URL searches Amazon.de sorted by "review-rank" (most reviewed first),
-# filtered to 4+ stars (rh=p_72:419122031).
-# Focused on small electronics and home appliances to match existing DB.
+# ── Base URL builder ──────────────────────────────────────────────────────────
+# s=review-rank  → sorted by most reviews first (maximises high-review products)
+# rh=p_72:419122031 → filtered to 4+ stars
+_BASE = "https://www.amazon.de/s?s=review-rank&rh=p_72%3A419122031&k="
+
+def _url(keyword: str) -> str:
+    return _BASE + keyword.replace(" ", "+")
+
+# ── Category list ─────────────────────────────────────────────────────────────
+# German keywords used — Amazon.de indexes primarily German product titles.
+# Categories mirror the expanded Heureka list for cross-source coverage.
 CATEGORIES = [
+    # ── Televize & Obraz ──────────────────────────────────────────────────────
+    {"name": "TVs",                 "url": _url("fernseher")},
+    {"name": "Monitors",            "url": _url("computer monitor")},
+    {"name": "Projectors",          "url": _url("beamer projektor")},
+
     # ── Audio ─────────────────────────────────────────────────────────────────
-    {"name": "Headphones",          "url": "https://www.amazon.de/s?k=kopfh%C3%B6rer&s=review-rank&rh=p_72%3A419122031"},
-    {"name": "Speakers",            "url": "https://www.amazon.de/s?k=bluetooth+lautsprecher&s=review-rank&rh=p_72%3A419122031"},
+    {"name": "Headphones",          "url": _url("kopfh\u00f6rer")},
+    {"name": "Speakers",            "url": _url("bluetooth lautsprecher")},
+    {"name": "Soundbars",           "url": _url("soundbar")},
+    {"name": "Earbuds",             "url": _url("kabellose ohrh\u00f6rer")},
 
-    # ── Wearables ─────────────────────────────────────────────────────────────
-    {"name": "Smartwatches",        "url": "https://www.amazon.de/s?k=smartwatch&s=review-rank&rh=p_72%3A419122031"},
+    # ── Mobily & Tablety ──────────────────────────────────────────────────────
+    {"name": "Mobile Phones",       "url": _url("smartphone")},
+    {"name": "Tablets",             "url": _url("tablet")},
+    {"name": "Phone Cases",         "url": _url("handyh\u00fclle")},
+    {"name": "Phone Chargers",      "url": _url("ladeger\u00e4t usb c")},
 
-    # ── Home appliances ───────────────────────────────────────────────────────
-    {"name": "Coffee Machines",     "url": "https://www.amazon.de/s?k=kaffeemaschine&s=review-rank&rh=p_72%3A419122031"},
-    {"name": "Vacuum Cleaners",     "url": "https://www.amazon.de/s?k=staubsauger&s=review-rank&rh=p_72%3A419122031"},
-    {"name": "Air Purifiers",       "url": "https://www.amazon.de/s?k=luftreiniger&s=review-rank&rh=p_72%3A419122031"},
-    {"name": "Kitchen Appliances",  "url": "https://www.amazon.de/s?k=k%C3%BCchenger%C3%A4te&s=review-rank&rh=p_72%3A419122031"},
-    {"name": "Robot Vacuums",       "url": "https://www.amazon.de/s?k=saugroboter&s=review-rank&rh=p_72%3A419122031"},
+    # ── Počítače & Notebooky ──────────────────────────────────────────────────
+    {"name": "Laptops",             "url": _url("laptop notebook")},
+    {"name": "Mice",                "url": _url("computer maus")},
+    {"name": "Keyboards",           "url": _url("tastatur")},
+    {"name": "Webcams",             "url": _url("webcam")},
+    {"name": "Routers",             "url": _url("wlan router")},
+    {"name": "Laptop Accessories",  "url": _url("laptop zubeh\u00f6r")},
 
-    # ── Computer peripherals ──────────────────────────────────────────────────
-    {"name": "Mice",                "url": "https://www.amazon.de/s?k=computer+maus&s=review-rank&rh=p_72%3A419122031"},
-    {"name": "Keyboards",           "url": "https://www.amazon.de/s?k=tastatur&s=review-rank&rh=p_72%3A419122031"},
-    {"name": "SSD",                 "url": "https://www.amazon.de/s?k=ssd+festplatte&s=review-rank&rh=p_72%3A419122031"},
+    # ── Úložiště ──────────────────────────────────────────────────────────────
+    {"name": "SSD",                 "url": _url("ssd festplatte")},
+    {"name": "HDD",                 "url": _url("externe festplatte")},
+    {"name": "USB Flash Drives",    "url": _url("usb stick")},
+    {"name": "RAM",                 "url": _url("arbeitsspeicher ram")},
+    {"name": "SD Cards",            "url": _url("speicherkarte sd")},
 
-    # ── TVs ───────────────────────────────────────────────────────────────────
-    {"name": "TVs",                 "url": "https://www.amazon.de/s?k=fernseher&s=review-rank&rh=p_72%3A419122031"},
+    # ── Chytré hodinky & fitness ──────────────────────────────────────────────
+    {"name": "Smartwatches",        "url": _url("smartwatch")},
+    {"name": "Fitness Trackers",    "url": _url("fitness tracker armband")},
+
+    # ── Foto & Video ──────────────────────────────────────────────────────────
+    {"name": "Digital Cameras",     "url": _url("digitalkamera")},
+    {"name": "Action Cameras",      "url": _url("action kamera")},
+    {"name": "Camera Accessories",  "url": _url("kamera zubeh\u00f6r stativ")},
+
+    # ── Domácí spotřebiče ─────────────────────────────────────────────────────
+    {"name": "Vacuum Cleaners",     "url": _url("staubsauger")},
+    {"name": "Robot Vacuums",       "url": _url("saugroboter")},
+    {"name": "Coffee Machines",     "url": _url("kaffeemaschine")},
+    {"name": "Coffee Pods",         "url": _url("kapselmaschine")},
+    {"name": "Air Purifiers",       "url": _url("luftreiniger")},
+    {"name": "Air Fryers",          "url": _url("hei\u00dfluftfritteuse")},
+    {"name": "Blenders",            "url": _url("standmixer smoothie")},
+    {"name": "Kettles",             "url": _url("wasserkocher")},
+    {"name": "Toasters",            "url": _url("toaster")},
+    {"name": "Kitchen Robots",      "url": _url("k\u00fcchenmaschine")},
+    {"name": "Microwaves",          "url": _url("mikrowelle")},
+    {"name": "Kitchen Appliances",  "url": _url("k\u00fcchenger\u00e4te klein")},
+    {"name": "Hair Dryers",         "url": _url("haartrockner f\u00f6n")},
+    {"name": "Electric Shavers",    "url": _url("elektrorasierer")},
+    {"name": "Irons",               "url": _url("b\u00fcgeleisen dampf")},
+    {"name": "Electric Toothbrush", "url": _url("elektrische zahnb\u00fcrste")},
+
+    # ── Hry & Gaming ──────────────────────────────────────────────────────────
+    {"name": "Game Controllers",    "url": _url("gamepad controller")},
+    {"name": "Gaming Headsets",     "url": _url("gaming headset")},
+    {"name": "Gaming Mice",         "url": _url("gaming maus")},
+    {"name": "Gaming Keyboards",    "url": _url("gaming tastatur")},
+
+    # ── Zabezpečení & Chytrá domácnost ────────────────────────────────────────
+    {"name": "IP Cameras",          "url": _url("\u00fcberwachungskamera wlan")},
+    {"name": "Smart Home",          "url": _url("smart home ger\u00e4te")},
+    {"name": "Smart Lighting",      "url": _url("smart lampe led")},
 ]
 
 logging.basicConfig(
@@ -200,16 +257,22 @@ def scrape_page(url: str, session) -> list:
             continue
 
         # ── Product URL ───────────────────────────────────────────────────────
-        link_el = card.select_one("h2 a")
+        # Try h2 a first, then any link containing the /dp/ASIN pattern
+        link_el = (
+            card.select_one("h2 a") or
+            card.select_one(f"a[href*='/dp/{asin}']") or
+            card.select_one("a[href*='/dp/']")
+        )
         product_url = ""
         if link_el and link_el.get("href"):
             href = link_el["href"]
-            # href is usually /dp/ASIN/... — make it absolute
-            product_url = f"https://www.amazon.de{href}" if href.startswith("/") else href
-            # Clean up tracking params — keep only up to /dp/ASIN/
-            m = re.match(r"(https://www\.amazon\.de/[^?]+)", product_url)
-            if m:
-                product_url = m.group(1)
+            full = f"https://www.amazon.de{href}" if href.startswith("/") else href
+            # Prefer the clean canonical /dp/ASIN URL — strip everything after
+            m = re.search(r"(https://www\.amazon\.de(?:/[^/?]*)?/dp/[A-Z0-9]{10})", full)
+            product_url = m.group(1) if m else full.split("?")[0]
+        # Final fallback: build URL directly from the ASIN (always available)
+        if not product_url and asin:
+            product_url = f"https://www.amazon.de/dp/{asin}"
 
         # ── Star rating ───────────────────────────────────────────────────────
         # Stored in <span class="a-icon-alt">4,5 von 5 Sternen</span>
@@ -325,9 +388,15 @@ def scrape_category(cat: dict, session, conn: sqlite3.Connection) -> int:
             log.info(f"   Stars dropped to {lowest_stars:.1f} — stopping early.")
             break
 
-        time.sleep(REQUEST_DELAY)
+        # Randomised delay between pages — avoids the fixed-interval bot signature
+        time.sleep(random.uniform(REQUEST_DELAY, REQUEST_DELAY * 1.8))
 
     return total_added
+
+
+def make_session():
+    """Create a fresh curl_cffi session with Chrome TLS impersonation."""
+    return requests.Session(impersonate="chrome120")
 
 
 def run_scraper() -> dict:
@@ -339,14 +408,27 @@ def run_scraper() -> dict:
         log.error(f"Database not found at {DB_PATH}. Run load_data.py first.")
         return {"error": "database_not_found"}
 
-    session = requests.Session(impersonate="chrome120")
+    session = make_session()
     warm_up_session(session)
-    time.sleep(REQUEST_DELAY)
+    time.sleep(random.uniform(3.0, 5.0))
 
     conn    = sqlite3.connect(DB_PATH)
     summary = {"categories_scraped": 0, "total_added": 0, "errors": []}
 
-    for cat in CATEGORIES:
+    for i, cat in enumerate(CATEGORIES):
+        # Refresh session cookies every SESSION_REFRESH_EVERY categories.
+        # Amazon soft-blocks a session after ~10-15 requests; fresh cookies reset this.
+        if i > 0 and i % SESSION_REFRESH_EVERY == 0:
+            log.info(f"── Session refresh after {i} categories — re-warming…")
+            try:
+                session.close()
+            except Exception:
+                pass
+            session = make_session()
+            warm_up_session(session)
+            # Longer pause after refresh so the new session looks natural
+            time.sleep(random.uniform(8.0, 14.0))
+
         try:
             added = scrape_category(cat, session, conn)
             summary["total_added"]        += added
@@ -354,11 +436,15 @@ def run_scraper() -> dict:
         except Exception as e:
             log.error(f"Error scraping {cat['name']}: {e}")
             summary["errors"].append({"category": cat["name"], "error": str(e)})
-        # Extra pause between categories — Amazon watches for rapid sequential requests
-        time.sleep(REQUEST_DELAY * 2)
+
+        # Randomised inter-category pause — avoids the fixed-interval bot signature
+        time.sleep(random.uniform(REQUEST_DELAY * 1.5, REQUEST_DELAY * 3.0))
 
     conn.close()
-    session.close()
+    try:
+        session.close()
+    except Exception:
+        pass
 
     log.info("=" * 60)
     log.info(
