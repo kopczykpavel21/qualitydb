@@ -151,7 +151,7 @@ def insert_products(conn, products, category):
                 p.get("Price_CZK"),
                 p.get("RecommendRate_pct"),
                 p.get("ReviewsCount", 0),
-                "scraper",
+                "zbozi",
             )
         )
         existing.add(key)

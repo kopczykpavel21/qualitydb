@@ -401,7 +401,15 @@ input[type="range"] {
   text-transform: uppercase;
   letter-spacing: .04em;
 }
-.source-badge.scraper { background: var(--accent-light); color: var(--accent); }
+.source-badge.scraper      { background: var(--accent-light); color: var(--accent); }
+.source-badge.src-heureka  { background: #fff3e0; color: #e65100; }
+.source-badge.src-zbozi    { background: #e8f5e9; color: #2e7d32; }
+.source-badge.src-amazon   { background: #fff8e1; color: #f57f17; }
+
+.source-metric             { font-weight: 600; font-size: 13px; }
+.source-metric.src-heureka { color: #e65100; }
+.source-metric.src-zbozi   { color: #2e7d32; }
+.source-metric.src-amazon  { color: #f57f17; }
 
 .card-category {
   font-size: 11px;

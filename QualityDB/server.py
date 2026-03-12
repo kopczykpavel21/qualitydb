@@ -29,7 +29,7 @@ _scraper_lock = threading.Lock()
 
 
 def _run_scrapers():
-    """Run Heureka + Amazon scrapers and update _scraper_status."""
+    """Run Heureka + Zbozi + Amazon scrapers and update _scraper_status."""
     with _scraper_lock:
         if _scraper_status["running"]:
             return   # already running, skip
@@ -47,13 +47,6 @@ def _run_scrapers():
             total_added += result.get("total_added", 0)
         except Exception as e:
             print(f"[scraper] Heureka error: {e}")
-
-        try:
-            from scraper.mall_scraper import run_scraper as run_mall
-            result = run_mall()
-            total_added += result.get("total_added", 0)
-        except Exception as e:
-            print(f"[scraper] Mall error: {e}")
 
         try:
             from scraper.zbozi_scraper import run_scraper as run_zbozi
@@ -162,12 +155,23 @@ def query_products(params):
     total = conn.execute(f"SELECT COUNT(*) FROM products {where}", plist).fetchone()[0]
     offset = (page - 1) * PAGE_SIZE
     rows = conn.execute(
-        f"""SELECT id, Name, Category, ProductURL, Price_CZK,
+        f"""WITH ranked AS (
+              SELECT *,
+                RANK() OVER (
+                  PARTITION BY source
+                  ORDER BY COALESCE(RecommendRate_pct, 0) DESC,
+                           COALESCE(ReviewsCount, 0) DESC
+                ) AS source_rank,
+                COUNT(*) OVER (PARTITION BY source) AS source_total
+              FROM products
+            )
+            SELECT id, Name, Category, ProductURL, Price_CZK,
                    AvgStarRating, StarRatingsCount, ReviewsCount,
                    RecommendRate_pct, ReturnRate_pct,
                    Stars5_Count, Stars4_Count, Stars3_Count,
-                   Stars2_Count, Stars1_Count, source
-            FROM products {where}
+                   Stars2_Count, Stars1_Count, source,
+                   source_rank, source_total
+            FROM ranked {where}
             ORDER BY {null_last}, {sort_by} {order_sql}
             LIMIT ? OFFSET ?""",
         plist + [PAGE_SIZE, offset]
