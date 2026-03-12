@@ -6,6 +6,8 @@ let currentPage = 1;
 let debounceTimer = null;
 let isListView = false;
 
+const SOURCE_LABELS = { alza: "Alza.cz", heureka: "Heureka.cz", zbozi: "Zbozi.cz", amazon: "Amazon.de" };
+
 // ---- State ----
 function getFilters() {
   const sortVal = document.getElementById("sort-by").value;
@@ -48,8 +50,6 @@ async function fetchStats() {
   const d = await res.json();
   document.getElementById("stat-total").textContent = d.total.toLocaleString();
   document.getElementById("stat-stars").textContent = d.avg_stars ?? "—";
-  document.getElementById("stat-return").textContent = d.avg_return ?? "—";
-  document.getElementById("stat-cats").textContent = d.categories;
 }
 
 // ---- Render ----
@@ -83,9 +83,27 @@ function renderCard(p) {
   const recommendDisplay = p.RecommendRate_pct ? p.RecommendRate_pct + "%" : "—";
   const reviewsDisplay = p.ReviewsCount ? p.ReviewsCount.toLocaleString() : "—";
   const priceDisplay = p.Price_CZK ? Math.round(p.Price_CZK).toLocaleString() + " Kč" : "";
-  const sourceBadge = p.source && p.source !== "alza"
-    ? `<span class="source-badge scraper">${p.source}</span>`
-    : `<span class="source-badge">Alza</span>`;
+  const sourceLabel = SOURCE_LABELS[p.source] || p.source || "Unknown";
+  const sourceCls = p.source === "alza" ? "source-badge" : `source-badge scraper src-${p.source}`;
+  const sourceBadge = `<span class="${sourceCls}">${sourceLabel}</span>`;
+
+  const rankDisplay = (p.source_rank && p.source_total)
+    ? `${p.source_rank} / ${p.source_total}`
+    : "—";
+  const rankClass = (p.source_rank && p.source_total)
+    ? (p.source_rank <= Math.ceil(p.source_total * 0.1) ? "good"
+      : p.source_rank >= Math.floor(p.source_total * 0.9) ? "bad" : "")
+    : "";
+
+  const firstMetric = p.source === "alza"
+    ? `<div class="metric">
+        <div class="metric-label">Return rate</div>
+        <div class="metric-value ${returnClass(p.ReturnRate_pct)}">${returnRateDisplay}</div>
+       </div>`
+    : `<div class="metric">
+        <div class="metric-label">Rank</div>
+        <div class="metric-value ${rankClass}">${rankDisplay}</div>
+       </div>`;
 
   return `
   <div class="product-card" onclick="openModal(${JSON.stringify(JSON.stringify(p))})">
@@ -93,10 +111,7 @@ function renderCard(p) {
     <div class="card-category">${escHtml(p.Category || "")}</div>
     <div class="card-name">${escHtml(p.Name || "Unnamed")}</div>
     <div class="card-metrics">
-      <div class="metric">
-        <div class="metric-label">Return rate</div>
-        <div class="metric-value ${returnClass(p.ReturnRate_pct)}">${returnRateDisplay}</div>
-      </div>
+      ${firstMetric}
       <div class="metric">
         <div class="metric-label">Recommend</div>
         <div class="metric-value ${recommendClass(p.RecommendRate_pct)}">${recommendDisplay}</div>
@@ -240,7 +255,7 @@ function openModal(jsonStr) {
     ${p.Description ? `<div class="modal-desc">${escHtml(p.Description).substring(0, 500)}${p.Description.length > 500 ? "…" : ""}</div>` : ""}
 
     <div class="modal-actions">
-      ${p.ProductURL ? `<a class="btn-primary" href="${escHtml(p.ProductURL)}" target="_blank">View on Alza →</a>` : ""}
+      ${p.ProductURL ? `<a class="btn-primary" href="${escHtml(p.ProductURL)}" target="_blank">View on ${SOURCE_LABELS[p.source] || "Shop"} →</a>` : ""}
       <button class="btn-secondary" onclick="closeModal()">Close</button>
     </div>`;
 
@@ -282,10 +297,7 @@ document.addEventListener("DOMContentLoaded", () => {
     triggerSearch();
   });
 
-  // Sort & dropdowns
-  document.getElementById("sort-by").addEventListener("change", triggerSearch);
-  document.getElementById("filter-category").addEventListener("change", triggerSearch);
-  document.getElementById("filter-source").addEventListener("change", triggerSearch);
+  // Sort & dropdowns (mobile versions registered later with closeSidebar)
 
   // Ranges
   const starSlider = document.getElementById("filter-stars");
@@ -377,6 +389,33 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.target === e.currentTarget) closeModal();
   });
   document.addEventListener("keydown", e => {
-    if (e.key === "Escape") closeModal();
+    if (e.key === "Escape") { closeModal(); closeSidebar(); }
+  });
+
+  // Mobile sidebar toggle
+  function openSidebar() {
+    document.getElementById("sidebar").classList.add("open");
+    document.getElementById("sidebar-backdrop").classList.add("open");
+    document.body.style.overflow = "hidden";
+  }
+  function closeSidebar() {
+    document.getElementById("sidebar").classList.remove("open");
+    document.getElementById("sidebar-backdrop").classList.remove("open");
+    document.body.style.overflow = "";
+  }
+  document.getElementById("mobile-filter-btn").addEventListener("click", openSidebar);
+  document.getElementById("sidebar-backdrop").addEventListener("click", closeSidebar);
+  document.getElementById("sidebar-close").addEventListener("click", closeSidebar);
+
+  // Auto-close sidebar after applying a filter on mobile
+  function triggerSearchAndClose() {
+    triggerSearch();
+    if (window.innerWidth <= 900) closeSidebar();
+  }
+  ["filter-category", "filter-source", "sort-by"].forEach(id => {
+    document.getElementById(id).addEventListener("change", triggerSearchAndClose);
+  });
+  [starSlider, returnSlider, reviewsSlider, recommendSlider].forEach(sl => {
+    sl.addEventListener("change", () => { if (window.innerWidth <= 900) closeSidebar(); });
   });
 });
