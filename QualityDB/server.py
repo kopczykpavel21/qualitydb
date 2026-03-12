@@ -24,12 +24,13 @@ _scraper_status = {
     "last_run":   None,   # ISO timestamp string
     "last_added": 0,
     "last_error": None,
+    "enabled":    True,   # set False via /api/stop-scraper to pause auto-runs
 }
 _scraper_lock = threading.Lock()
 
 
 def _run_scrapers():
-    """Run Heureka + Zbozi + Amazon scrapers and update _scraper_status."""
+    """Run Amazon + Heureka + Zbozi scrapers and update _scraper_status."""
     with _scraper_lock:
         if _scraper_status["running"]:
             return   # already running, skip
@@ -40,6 +41,14 @@ def _run_scrapers():
     try:
         import sys as _sys
         _sys.path.insert(0, os.path.dirname(__file__))
+
+        # Amazon first — most review-rich source
+        try:
+            from scraper.amazon_scraper import run_scraper as run_amazon
+            result = run_amazon()
+            total_added += result.get("total_added", 0)
+        except Exception as e:
+            print(f"[scraper] Amazon error: {e}")
 
         try:
             from scraper.heureka_scraper import run_scraper as run_heureka
@@ -55,13 +64,6 @@ def _run_scrapers():
         except Exception as e:
             print(f"[scraper] Zbozi error: {e}")
 
-        try:
-            from scraper.amazon_scraper import run_scraper as run_amazon
-            result = run_amazon()
-            total_added += result.get("total_added", 0)
-        except Exception as e:
-            print(f"[scraper] Amazon error: {e}")
-
     except Exception as e:
         with _scraper_lock:
             _scraper_status["last_error"] = str(e)
@@ -75,15 +77,20 @@ def _run_scrapers():
 
 def _scraper_loop():
     """
-    Background thread: wait 60 s after startup, run scrapers, then repeat every 24 h.
-    The 60-second delay lets the server finish starting before heavy work begins.
+    Background thread: wait 5 min after startup, then repeat every 24 h.
+    Respects _scraper_status["enabled"] — if False, skips the run silently.
     """
-    print("[scraper] Background scheduler started — first run in 60 s.")
-    time.sleep(60)
+    print("[scraper] Background scheduler started — first run in 5 min.")
+    time.sleep(5 * 60)
     while True:
-        print("[scraper] Starting scheduled scrape run…")
-        _run_scrapers()
-        print("[scraper] Next run in 24 hours.")
+        with _scraper_lock:
+            enabled = _scraper_status["enabled"]
+        if enabled:
+            print("[scraper] Starting scheduled scrape run…")
+            _run_scrapers()
+            print("[scraper] Next run in 24 hours.")
+        else:
+            print("[scraper] Skipping scheduled run (scraper is paused).")
         time.sleep(24 * 60 * 60)
 
 
@@ -276,6 +283,16 @@ class Handler(BaseHTTPRequestHandler):
                 t = threading.Thread(target=_run_scrapers, daemon=True)
                 t.start()
                 self.send_json({"status": "started"})
+
+        elif path == "/api/stop-scraper":
+            with _scraper_lock:
+                _scraper_status["enabled"] = False
+            self.send_json({"status": "paused", "message": "Scraper paused — current run will finish if in progress, next scheduled run will be skipped."})
+
+        elif path == "/api/start-scraper":
+            with _scraper_lock:
+                _scraper_status["enabled"] = True
+            self.send_json({"status": "resumed", "message": "Scraper resumed — will run on next schedule or use /api/run-scraper to trigger now."})
 
         elif path.startswith("/static/"):
             fname = path[len("/static/"):]
