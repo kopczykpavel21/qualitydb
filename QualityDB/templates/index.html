@@ -20,8 +20,6 @@
     <div class="header-stats" id="header-stats">
       <span class="stat-pill"><span id="stat-total">—</span> products</span>
       <span class="stat-pill">⭐ <span id="stat-stars">—</span> avg</span>
-      <span class="stat-pill">↩ <span id="stat-return">—</span>% avg return</span>
-      <span class="stat-pill"><span id="stat-cats">—</span> categories</span>
     </div>
   </div>
 </header>
@@ -37,14 +35,25 @@
   </div>
 </div>
 
+<!-- MOBILE FILTER TOGGLE -->
+<button class="mobile-filter-btn" id="mobile-filter-btn">
+  <span>⚙</span> Filters
+</button>
+
+<!-- SIDEBAR BACKDROP (mobile) -->
+<div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
 <!-- MAIN LAYOUT -->
 <div class="layout">
 
   <!-- SIDEBAR FILTERS -->
-  <aside class="sidebar">
+  <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
       <h2>Filters</h2>
-      <button class="reset-btn" id="reset-filters">Reset all</button>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button class="reset-btn" id="reset-filters">Reset all</button>
+        <button class="sidebar-close-btn" id="sidebar-close">✕</button>
+      </div>
     </div>
 
     <!-- Category -->
@@ -110,7 +119,9 @@
       <select id="filter-source" class="filter-select">
         <option value="">All sources</option>
         <option value="alza">Alza.cz</option>
-        <option value="scraper">Auto-scraped</option>
+        <option value="heureka">Heureka.cz</option>
+        <option value="zbozi">Zbozi.cz</option>
+        <option value="amazon">Amazon.de</option>
       </select>
     </div>
   </aside>
