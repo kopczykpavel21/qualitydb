@@ -183,7 +183,7 @@ def insert_products(conn: sqlite3.Connection, products: list, category: str) -> 
                 p.get("Price_CZK"),
                 p.get("RecommendRate_pct"),
                 p.get("ReviewsCount", 0),
-                "scraper",
+                "heureka",
             )
         )
         existing.add(key)
