@@ -1,24 +1,23 @@
-app = "qualitydb-pavel"
-primary_region = "ams"
+# fly.toml app configuration file generated for database-of-high-quality-products on 2026-03-23T08:40:23Z
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'database-of-high-quality-products'
+primary_region = 'ams'
 
 [build]
-
-[env]
-  DB_PATH = "/data/products.db"
 
 [http_service]
   internal_port = 8080
   force_https = true
-  auto_stop_machines = "stop"
+  auto_stop_machines = 'stop'
   auto_start_machines = true
   min_machines_running = 0
+  processes = ['app']
 
 [[vm]]
-  memory = "2gb"
-  cpu_kind = "shared"
+  memory = '1gb'
+  cpu_kind = 'shared'
   cpus = 1
-
-[[mounts]]
-  source = "qualitydb_data"
-  destination = "/data"
-  initial_size = "1gb"
+  memory_mb = 2048
