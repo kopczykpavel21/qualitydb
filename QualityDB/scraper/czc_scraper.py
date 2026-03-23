@@ -4,19 +4,25 @@ CZC.cz scraper — Czech electronics retailer.
 CZC.cz is one of the largest Czech e-shops specialising in electronics/IT.
 Products have 1-5 star ratings and written reviews.
 
+Uses Playwright (headless Chromium) to bypass Cloudflare JS challenge.
+Install once:
+    pip3 install playwright beautifulsoup4
+    playwright install chromium
+
 Usage:
     python3 scraper/czc_scraper.py
     python3 scraper/czc_scraper.py --dry-run   # print without saving
 """
 
-import re, time, logging, sqlite3, os, sys, json, argparse
+import re, time, logging, sqlite3, os, sys, argparse
 
 try:
-    from curl_cffi import requests
+    from playwright.sync_api import sync_playwright, TimeoutError as PWTimeout
     from bs4 import BeautifulSoup
 except ImportError:
     print("\n⚠  Missing dependencies. Please run:")
-    print("    pip3 install curl_cffi beautifulsoup4\n")
+    print("    pip3 install playwright beautifulsoup4")
+    print("    playwright install chromium\n")
     sys.exit(1)
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
@@ -25,8 +31,9 @@ DB_PATH       = os.path.join(os.path.dirname(os.path.dirname(__file__)), "produc
 MIN_STARS     = 4.0    # out of 5 — equivalent to ~80% recommend
 MIN_REVIEWS   = 5
 STOP_BELOW    = 3.5    # stop page when avg stars drop this low
-REQUEST_DELAY = 2.0
+PAGE_DELAY    = 2.5    # seconds between page loads
 MAX_PAGES     = 15
+PAGE_SIZE     = 24     # CZC shows 24 products per page
 
 logging.basicConfig(
     level=logging.INFO,
@@ -37,22 +44,6 @@ logging.basicConfig(
     ]
 )
 log = logging.getLogger(__name__)
-
-# Full browser headers including Sec-Fetch-* to pass Cloudflare/bot protection
-HEADERS = {
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
-    "Accept-Encoding": "gzip, deflate, br, zstd",
-    "Accept-Language": "cs-CZ,cs;q=0.9,sk;q=0.8,en-US;q=0.7,en;q=0.6",
-    "Cache-Control": "max-age=0",
-    "Sec-Ch-Ua": '"Google Chrome";v="124", "Chromium";v="124", "Not-A.Brand";v="99"',
-    "Sec-Ch-Ua-Mobile": "?0",
-    "Sec-Ch-Ua-Platform": '"Windows"',
-    "Sec-Fetch-Dest": "document",
-    "Sec-Fetch-Mode": "navigate",
-    "Sec-Fetch-Site": "none",
-    "Sec-Fetch-User": "?1",
-    "Upgrade-Insecure-Requests": "1",
-}
 
 # ── Categories ────────────────────────────────────────────────────────────────
 # CZC URL pattern: https://www.czc.cz/{slug}/produkty
@@ -89,19 +80,17 @@ CATEGORIES = [
 def parse_stars(card):
     """
     CZC shows star rating in several possible ways:
-    1. data-average-score attribute on a rating element
-    2. aria-label like "Hodnocení: 4.5 z 5"
-    3. width% on a filled-stars bar
+    1. data-average-score / data-score attribute
+    2. aria-label "Hodnocení: 4.5 z 5"
+    3. itemprop ratingValue
     Returns float 0-5 or None.
     """
-    # Try data attribute first
     el = card.select_one("[data-average-score], [data-score]")
     if el:
         val = el.get("data-average-score") or el.get("data-score")
         try: return float(val)
         except: pass
 
-    # Try aria-label "X z 5" or "X/5"
     for el in card.select("[aria-label]"):
         label = el.get("aria-label", "")
         m = re.search(r"(\d+(?:[.,]\d+)?)\s*(?:z|/)\s*5", label)
@@ -109,14 +98,12 @@ def parse_stars(card):
             try: return float(m.group(1).replace(",", "."))
             except: pass
 
-    # Try itemprop ratingValue
     el = card.select_one("[itemprop='ratingValue']")
     if el:
         val = el.get("content") or el.get_text(strip=True)
         try: return float(val.replace(",", "."))
         except: pass
 
-    # Try class-based star rating (count filled stars)
     filled = card.select(".star--full, .icon-star--full, .rating__star--full")
     if filled:
         return float(len(filled))
@@ -125,12 +112,10 @@ def parse_stars(card):
 
 
 def parse_reviews(card):
-    """Look for review/rating count near the stars."""
     for el in card.select("[itemprop='reviewCount'], [itemprop='ratingCount']"):
         try: return int(el.get("content") or el.get_text(strip=True))
         except: pass
 
-    # Text like "12 recenzí" or "(45)"
     for el in card.find_all(["span", "a", "div"]):
         text = el.get_text(strip=True)
         m = re.search(r"\((\d+)\)|(\d+)\s*(?:recenz|hodnocen|review)", text, re.IGNORECASE)
@@ -142,7 +127,6 @@ def parse_reviews(card):
 
 
 def parse_price(card):
-    """Return price as float CZK, or None."""
     for sel in [".price-box__price", ".price__value", ".c-price", "[itemprop='price']",
                 ".normal-price", ".pd-price"]:
         el = card.select_one(sel)
@@ -170,40 +154,43 @@ def parse_url(card):
         el = card.select_one(sel)
         if el and el.get("href"):
             href = el["href"]
-            if href.startswith("http"):
-                return href
-            return "https://www.czc.cz" + href
+            return href if href.startswith("http") else "https://www.czc.cz" + href
     return ""
 
 
-# ── Session & fetching ────────────────────────────────────────────────────────
+# ── Playwright fetching ───────────────────────────────────────────────────────
 
-def warm_up(session):
+def fetch_page_html(page, url):
+    """
+    Load URL in Playwright and return full HTML after JS has run.
+    Waits for the product grid to appear or times out gracefully.
+    """
     try:
-        resp = session.get("https://www.czc.cz/", headers=HEADERS, timeout=20)
-        resp.raise_for_status()
-        log.info(f"Session ready — status {resp.status_code}, {len(session.cookies)} cookies")
-        time.sleep(2.0)
+        page.goto(url, wait_until="domcontentloaded", timeout=30_000)
+        # Wait for any product card selector to appear
+        try:
+            page.wait_for_selector(
+                ".pd-wrapper, .product-tile, [data-product-id], article.product",
+                timeout=10_000
+            )
+        except PWTimeout:
+            pass  # Maybe no products — let BeautifulSoup decide
+        time.sleep(1.0)  # small extra settle time for lazy-loaded content
+        return page.content()
+    except PWTimeout:
+        log.warning(f"  Timeout loading {url}")
+        return ""
     except Exception as e:
-        log.warning(f"Warmup failed: {e}")
+        log.warning(f"  Error loading {url}: {e}")
+        return ""
 
 
-def scrape_page(url, session):
-    # Add Referer so requests look like they come from browsing the site
-    page_headers = {**HEADERS, "Referer": "https://www.czc.cz/", "Sec-Fetch-Site": "same-origin"}
-    try:
-        resp = session.get(url, headers=page_headers, timeout=25)
-        if resp.status_code == 403:
-            log.warning(f"  403 Forbidden — bot protection active at {url}")
-            return []
-        resp.raise_for_status()
-    except Exception as e:
-        log.warning(f"  Request failed: {e}")
+def scrape_page(html):
+    if not html:
         return []
 
-    soup = BeautifulSoup(resp.text, "html.parser")
+    soup = BeautifulSoup(html, "html.parser")
 
-    # CZC uses several possible card selectors across page redesigns
     cards = (soup.select(".pd-wrapper") or
              soup.select(".product-tile") or
              soup.select("article.product") or
@@ -211,9 +198,7 @@ def scrape_page(url, session):
              soup.select("[data-product-id]"))
 
     if not cards:
-        log.debug(f"  No product cards found at {url}")
-        # Try to detect pagination end vs empty
-        if "nenalezeny žádné produkty" in resp.text.lower():
+        if "nenalezeny žádné produkty" in html.lower():
             log.info("  End of results.")
         return []
 
@@ -221,10 +206,10 @@ def scrape_page(url, session):
     for card in cards:
         name = parse_name(card)
         if not name: continue
-        stars  = parse_stars(card)
+        stars   = parse_stars(card)
         reviews = parse_reviews(card)
-        price  = parse_price(card)
-        purl   = parse_url(card)
+        price   = parse_price(card)
+        purl    = parse_url(card)
         products.append({
             "Name": name, "ProductURL": purl,
             "AvgStarRating": stars, "ReviewsCount": reviews, "Price_CZK": price,
@@ -266,18 +251,18 @@ def insert(conn, products, cat_name, main_cat, dry_run=False):
 
 # ── Main scrape logic ─────────────────────────────────────────────────────────
 
-def scrape_category(cat, session, conn, dry_run=False):
+def scrape_category(cat, pw_page, conn, dry_run=False):
     total = 0
     base  = f"https://www.czc.cz/{cat['slug']}/produkty"
     log.info(f"── {cat['name']}  ({base})")
 
-    for page in range(1, MAX_PAGES + 1):
-        # CZC pagination: ?offset=N (24 per page)
-        offset = (page - 1) * 24
-        url = base if page == 1 else f"{base}?offset={offset}"
-        log.info(f"   Page {page} (offset {offset}): {url}")
+    for page_num in range(1, MAX_PAGES + 1):
+        offset = (page_num - 1) * PAGE_SIZE
+        url = base if page_num == 1 else f"{base}?offset={offset}"
+        log.info(f"   Page {page_num} (offset {offset}): {url}")
 
-        products = scrape_page(url, session)
+        html = fetch_page_html(pw_page, url)
+        products = scrape_page(html)
         if not products:
             log.info("   No products — stopping.")
             break
@@ -295,27 +280,53 @@ def scrape_category(cat, session, conn, dry_run=False):
         if lowest < STOP_BELOW:
             log.info(f"   Stars dropped to {lowest:.1f} — stopping.")
             break
-        time.sleep(REQUEST_DELAY)
+        time.sleep(PAGE_DELAY)
     return total
 
 
 def run_scraper(dry_run=False):
     log.info("=" * 60)
-    log.info("QualityDB — CZC.cz Scraper")
+    log.info("QualityDB — CZC.cz Scraper (Playwright)")
     log.info("=" * 60)
-    session = requests.Session(impersonate="chrome124")
-    warm_up(session)
+
     conn = sqlite3.connect(DB_PATH)
     summary = {"total_added": 0, "categories_scraped": 0, "errors": []}
-    for cat in CATEGORIES:
+
+    with sync_playwright() as pw:
+        browser = pw.chromium.launch(headless=True)
+        context = browser.new_context(
+            locale="cs-CZ",
+            timezone_id="Europe/Prague",
+            viewport={"width": 1280, "height": 900},
+            user_agent=(
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/124.0.0.0 Safari/537.36"
+            ),
+        )
+        pw_page = context.new_page()
+
+        # Warm up — visit homepage so cookies are set
+        log.info("Warming up session…")
         try:
-            added = scrape_category(cat, session, conn, dry_run)
-            summary["total_added"] += added
-            summary["categories_scraped"] += 1
+            pw_page.goto("https://www.czc.cz/", wait_until="domcontentloaded", timeout=30_000)
+            time.sleep(3.0)
+            log.info("Homepage loaded — session ready")
         except Exception as e:
-            log.error(f"Error in {cat['name']}: {e}")
-            summary["errors"].append(str(e))
-        time.sleep(REQUEST_DELAY)
+            log.warning(f"Warmup failed: {e}")
+
+        for cat in CATEGORIES:
+            try:
+                added = scrape_category(cat, pw_page, conn, dry_run)
+                summary["total_added"] += added
+                summary["categories_scraped"] += 1
+            except Exception as e:
+                log.error(f"Error in {cat['name']}: {e}")
+                summary["errors"].append(str(e))
+            time.sleep(PAGE_DELAY)
+
+        browser.close()
+
     conn.close()
     log.info(f"Done — {summary['total_added']} new CZ products added.")
     return summary
