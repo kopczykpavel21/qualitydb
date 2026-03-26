@@ -420,6 +420,16 @@ input[type="range"] {
   color: #2e7d32;
   border: 1px solid #a5d6a7;
 }
+.badge-warn {
+  background: #fff3e0;
+  color: #e65100;
+  border: 1px solid #ffcc02;
+}
+.badge-bad {
+  background: #fce4ec;
+  color: #b71c1c;
+  border: 1px solid #ef9a9a;
+}
 
 .source-badge {
   position: absolute;

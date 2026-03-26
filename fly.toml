@@ -21,4 +21,4 @@ primary_region = "ams"
 [[mounts]]
   source = "qualitydb_data"
   destination = "/data"
-  initial_size = "1gb"
+  initial_size = "3gb"

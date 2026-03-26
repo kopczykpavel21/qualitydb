@@ -96,13 +96,6 @@ def _run_scrapers():
             print(f"[scraper] Heureka.sk error: {e}")
 
         try:
-            from scraper.czc_scraper import run_scraper as run_czc
-            result = run_czc()
-            total_added += result.get("total_added", 0)
-        except Exception as e:
-            print(f"[scraper] CZC error: {e}")
-
-        try:
             from scraper.conrad_scraper import run_scraper as run_conrad
             result = run_conrad()
             total_added += result.get("total_added", 0)
@@ -233,7 +226,6 @@ def query_products(params):
         "conrad": "DE",
         "dtest": "CZ",
         "alza": "CZ", "heureka": "CZ", "zbozi": "CZ", "datart": "CZ",
-        "czc": "CZ",
         "ceneo": "PL",
         "amazon_us": "US",
         "heureka_sk": "SK",
@@ -279,10 +271,13 @@ def query_products(params):
     if avoid == "1":
         # Products to avoid: low star rating with enough reviews to be meaningful
         # OR low recommendation rate with enough reviews
+        # OR Stiftung Warentest / D-test flagged as poor (AvgStarRating < 2.5 = "ausreichend"/"mangelhaft")
         conditions.append("""(
             (AvgStarRating IS NOT NULL AND AvgStarRating < 3.5 AND ReviewsCount >= 100)
             OR
             (RecommendRate_pct IS NOT NULL AND RecommendRate_pct < 65 AND ReviewsCount >= 50)
+            OR
+            (source IN ('warentest', 'dtest') AND AvgStarRating IS NOT NULL AND AvgStarRating < 2.5)
         )""")
 
     where = "WHERE " + " AND ".join(conditions) if conditions else ""
@@ -306,6 +301,9 @@ def query_products(params):
                   PARTITION BY Category
                   ORDER BY (
                     CASE
+                      -- Warentest & D-test: professional scores, no review-count dampening
+                      WHEN source IN ('warentest', 'dtest') AND AvgStarRating IS NOT NULL
+                      THEN (AvgStarRating / 5.0) * 100.0
                       WHEN RecommendRate_pct IS NOT NULL
                       THEN COALESCE(RecommendRate_pct, 0) * COALESCE(ReviewsCount, 0)
                            / (COALESCE(ReviewsCount, 0) + 50.0)

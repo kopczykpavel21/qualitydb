@@ -13,7 +13,7 @@ const SOURCE_LABELS = {
   alza: "Alza.cz", heureka: "Heureka.cz", zbozi: "Zbozi.cz",
   amazon: "Amazon.de", amazon_us: "Amazon.com", otto: "Otto.de", warentest: "Stiftung Warentest",
   dtest: "D-test.cz", datart: "Datart.cz", ceneo: "Ceneo.pl",
-  czc: "CZC.cz", heureka_sk: "Heureka.sk", conrad: "Conrad.de"
+  heureka_sk: "Heureka.sk", conrad: "Conrad.de"
 };
 
 function priceStr(p) {
@@ -48,6 +48,27 @@ function buildSortOptions() {
 
 // ---- Quality badge ----
 function qualityBadge(p) {
+  // For Stiftung Warentest: use grade label from details_json.sub_ratings.overall
+  if (p.source === "warentest" && p.details_json) {
+    try {
+      const dj = typeof p.details_json === "string" ? JSON.parse(p.details_json) : p.details_json;
+      const overall = (dj.sub_ratings || {}).overall || {};
+      const label = overall.label;
+      const grade = overall.grade;
+      if (label === "sehr gut")    return `<span class="quality-badge badge-excellent">🏆 Sehr gut</span>`;
+      if (label === "gut")         return `<span class="quality-badge badge-good">✅ Gut</span>`;
+      if (label === "befriedigend") return `<span class="quality-badge badge-warn">⚠️ Befriedigend</span>`;
+      if (label === "ausreichend") return `<span class="quality-badge badge-bad">❌ Ausreichend</span>`;
+      if (label === "mangelhaft")  return `<span class="quality-badge badge-bad">❌ Mangelhaft</span>`;
+      // Fallback: use grade number if label missing
+      if (grade !== undefined) {
+        if (grade <= 1.5) return `<span class="quality-badge badge-excellent">🏆 Sehr gut</span>`;
+        if (grade <= 2.5) return `<span class="quality-badge badge-good">✅ Gut</span>`;
+        if (grade <= 3.5) return `<span class="quality-badge badge-warn">⚠️ Befriedigend</span>`;
+        return `<span class="quality-badge badge-bad">❌ Ausreichend</span>`;
+      }
+    } catch(e) {}
+  }
   // For D-test: use overall_score from details_json
   let score = null;
   if (p.source === "dtest" && p.details_json) {
@@ -123,7 +144,7 @@ async function fetchCategories() {
   const src = document.getElementById("filter-source").value;
   const SOURCE_COUNTRY_MAP = { otto:"DE", warentest:"DE", amazon:"DE", ceneo:"PL",
                                 dtest:"CZ", alza:"CZ", heureka:"CZ", zbozi:"CZ", datart:"CZ",
-                                amazon_us:"US", czc:"CZ", heureka_sk:"SK", conrad:"DE" };
+                                amazon_us:"US", heureka_sk:"SK", conrad:"DE" };
   // No source selected → no country filter → all-market categories
   const country = src ? (SOURCE_COUNTRY_MAP[src] || "") : "";
   const res = await fetch(`/api/categories${country ? "?country=" + country : ""}`);
