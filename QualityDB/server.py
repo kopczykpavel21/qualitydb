@@ -295,28 +295,7 @@ def query_products(params):
     total = conn.execute(f"SELECT COUNT(*) FROM products {where}", plist).fetchone()[0]
     offset = (page - 1) * PAGE_SIZE
     rows = conn.execute(
-        f"""WITH ranked AS (
-              SELECT *,
-                RANK() OVER (
-                  PARTITION BY Category
-                  ORDER BY (
-                    CASE
-                      -- Warentest & D-test: professional scores, no review-count dampening
-                      WHEN source IN ('warentest', 'dtest') AND AvgStarRating IS NOT NULL
-                      THEN (AvgStarRating / 5.0) * 100.0
-                      WHEN RecommendRate_pct IS NOT NULL
-                      THEN COALESCE(RecommendRate_pct, 0) * COALESCE(ReviewsCount, 0)
-                           / (COALESCE(ReviewsCount, 0) + 50.0)
-                      ELSE (COALESCE(AvgStarRating, 0) / 5.0) * 100.0
-                           * COALESCE(ReviewsCount, 0)
-                           / (COALESCE(ReviewsCount, 0) + 200.0)
-                    END
-                  ) DESC
-                ) AS source_rank,
-                COUNT(*) OVER (PARTITION BY Category) AS source_total
-              FROM products
-            )
-            SELECT id, Name, MainCategory, Category, ProductURL, Price_CZK,
+        f"""SELECT id, Name, MainCategory, Category, ProductURL, Price_CZK,
                    COALESCE(Price_EUR, NULL) as Price_EUR,
                    COALESCE(country, 'CZ') as country,
                    currency,
@@ -324,9 +303,11 @@ def query_products(params):
                    RecommendRate_pct, ReturnRate_pct,
                    Stars5_Count, Stars4_Count, Stars3_Count,
                    Stars2_Count, Stars1_Count, source,
-                   source_rank, source_total, keywords,
+                   COALESCE(cat_rank, 0) as source_rank,
+                   COALESCE(cat_total, 0) as source_total,
+                   keywords,
                    COALESCE(details_json, NULL) as details_json
-            FROM ranked {where}
+            FROM products {where}
             ORDER BY {null_last}, {sort_expr} {order_sql}
             LIMIT ? OFFSET ?""",
         plist + [PAGE_SIZE, offset]
