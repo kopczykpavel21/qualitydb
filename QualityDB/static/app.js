@@ -6,10 +6,100 @@ let currentPage = 1;
 let debounceTimer = null;
 let isListView = false;
 let activeKeyword = "";
+let avoidMode = false;
 let categoriesTree = [];   // [{main, subs:[{sub,count}]}]
 let competitorBrands = new Set();  // lowercase brand names with competitor data
 
-const SOURCE_LABELS = { alza: "Alza.cz", heureka: "Heureka.cz", zbozi: "Zbozi.cz", amazon: "Amazon.de" };
+const SOURCE_LABELS = {
+  alza: "Alza.cz", heureka: "Heureka.cz", zbozi: "Zbozi.cz",
+  amazon: "Amazon.de", amazon_us: "Amazon.com", otto: "Otto.de", warentest: "Stiftung Warentest",
+  dtest: "D-test.cz", datart: "Datart.cz", ceneo: "Ceneo.pl",
+  heureka_sk: "Heureka.sk", conrad: "Conrad.de"
+};
+
+function priceStr(p) {
+  if (p.currency === "USD" && p.Price_EUR) return "$" + p.Price_EUR.toLocaleString("en-US", {minimumFractionDigits: 0, maximumFractionDigits: 2});
+  if (p.currency === "PLN" && p.Price_CZK) return Math.round(p.Price_CZK).toLocaleString("pl-PL") + " zł";
+  if (p.Price_EUR) return Math.round(p.Price_EUR).toLocaleString("de-DE") + " €";
+  if (p.Price_CZK) return Math.round(p.Price_CZK).toLocaleString("cs-CZ") + " Kč";
+  return "";
+}
+
+// ---- Sort dropdown ----
+function buildSortOptions() {
+  const options = [
+    { value: "RecommendRate_pct_desc", label: "Recommend rate (high → low)" },
+    { value: "RecommendRate_pct",      label: "Recommend rate (low → high)" },
+    { value: "AvgStarRating_desc",     label: "Star rating (high → low)" },
+    { value: "AvgStarRating",          label: "Star rating (low → high)" },
+    { value: "ReviewsCount_desc",      label: "Most reviewed" },
+    { value: "Price_CZK",              label: "Price (low → high)" },
+    { value: "Price_CZK_desc",         label: "Price (high → low)" },
+    { value: "Price_EUR",              label: "Price USD (low → high)" },
+    { value: "Price_EUR_desc",         label: "Price USD (high → low)" },
+    { value: "ReturnRate_pct",         label: "Return rate (low → high)" },
+    { value: "Name",                   label: "Name (A → Z)" },
+  ];
+  const sel = document.getElementById("sort-by");
+  sel.innerHTML = options.map(o =>
+    `<option value="${o.value}">${o.label}</option>`
+  ).join("");
+  sel.value = "RecommendRate_pct_desc";
+}
+
+// ---- Quality badge ----
+function qualityBadge(p) {
+  // For Stiftung Warentest: use grade label from details_json.sub_ratings.overall
+  if (p.source === "warentest" && p.details_json) {
+    try {
+      const dj = typeof p.details_json === "string" ? JSON.parse(p.details_json) : p.details_json;
+      const overall = (dj.sub_ratings || {}).overall || {};
+      const label = overall.label;
+      const grade = overall.grade;
+      if (label === "sehr gut")    return `<span class="quality-badge badge-excellent">🏆 Sehr gut</span>`;
+      if (label === "gut")         return `<span class="quality-badge badge-good">✅ Gut</span>`;
+      if (label === "befriedigend") return `<span class="quality-badge badge-warn">⚠️ Befriedigend</span>`;
+      if (label === "ausreichend") return `<span class="quality-badge badge-bad">❌ Ausreichend</span>`;
+      if (label === "mangelhaft")  return `<span class="quality-badge badge-bad">❌ Mangelhaft</span>`;
+      // Fallback: use grade number if label missing
+      if (grade !== undefined) {
+        if (grade <= 1.5) return `<span class="quality-badge badge-excellent">🏆 Sehr gut</span>`;
+        if (grade <= 2.5) return `<span class="quality-badge badge-good">✅ Gut</span>`;
+        if (grade <= 3.5) return `<span class="quality-badge badge-warn">⚠️ Befriedigend</span>`;
+        return `<span class="quality-badge badge-bad">❌ Ausreichend</span>`;
+      }
+    } catch(e) {}
+  }
+  // For D-test: use overall_score from details_json
+  let score = null;
+  if (p.source === "dtest" && p.details_json) {
+    try {
+      const dj = typeof p.details_json === "string" ? JSON.parse(p.details_json) : p.details_json;
+      score = dj.overall_score;
+    } catch(e) {}
+  }
+  // Fallback to RecommendRate_pct for CZ/DE/PL sources
+  const rec = p.RecommendRate_pct;
+
+  if (score !== null && score !== undefined) {
+    if (score >= 80) return `<span class="quality-badge badge-excellent">🏆 D-test Top</span>`;
+    if (score >= 70) return `<span class="quality-badge badge-good">✅ D-test Dobrý</span>`;
+    return "";
+  }
+  if (rec !== null && rec !== undefined) {
+    if (rec >= 97) return `<span class="quality-badge badge-excellent">🏆 Top Pick</span>`;
+    if (rec >= 93) return `<span class="quality-badge badge-excellent">⭐ Excellent</span>`;
+    if (rec >= 88) return `<span class="quality-badge badge-good">✅ Good</span>`;
+  }
+  // For Amazon US: use star rating + review count as quality signal
+  if (p.source === "amazon_us") {
+    const stars = p.AvgStarRating;
+    const reviews = p.ReviewsCount || 0;
+    if (stars >= 4.7 && reviews >= 1000) return `<span class="quality-badge badge-excellent">🏆 Top Rated</span>`;
+    if (stars >= 4.5 && reviews >= 500)  return `<span class="quality-badge badge-good">⭐ Highly Rated</span>`;
+  }
+  return "";
+}
 
 const COMPETITOR_SOURCE_META = {
   french_index: { label: "🇫🇷 EU Index",    color: "#1d4ed8", desc: "French Repairability Index (0–100)" },
@@ -43,6 +133,7 @@ function getFilters() {
     order: sortDir,
     source: document.getElementById("filter-source").value,
     keyword: activeKeyword,
+    avoid: avoidMode ? "1" : "",
     page: currentPage
   };
 }
@@ -59,7 +150,13 @@ async function fetchProducts() {
 }
 
 async function fetchCategories() {
-  const res = await fetch("/api/categories");
+  const src = document.getElementById("filter-source").value;
+  const SOURCE_COUNTRY_MAP = { otto:"DE", warentest:"DE", amazon:"DE", ceneo:"PL",
+                                dtest:"CZ", alza:"CZ", heureka:"CZ", zbozi:"CZ", datart:"CZ",
+                                amazon_us:"US", heureka_sk:"SK", conrad:"DE" };
+  // No source selected → no country filter → all-market categories
+  const country = src ? (SOURCE_COUNTRY_MAP[src] || "") : "";
+  const res = await fetch(`/api/categories${country ? "?country=" + country : ""}`);
   categoriesTree = await res.json();
 
   const mainSel = document.getElementById("filter-main-category");
@@ -104,14 +201,17 @@ async function fetchKeywords() {
   container.querySelectorAll(".kw-pill").forEach(btn => {
     btn.addEventListener("click", () => {
       const kw = btn.dataset.kw;
+      const clearBtn = document.getElementById("kw-clear-btn");
       if (activeKeyword === kw) {
         // deselect
         activeKeyword = "";
         btn.classList.remove("active");
+        if (clearBtn) clearBtn.style.display = "none";
       } else {
         activeKeyword = kw;
         container.querySelectorAll(".kw-pill").forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
+        if (clearBtn) clearBtn.style.display = "";
       }
       currentPage = 1;
       fetchProducts();
@@ -152,8 +252,13 @@ function returnClass(val) {
   return "bad";
 }
 
-function recommendClass(val) {
+function recommendClass(val, isStars) {
   if (!val) return "";
+  if (isStars) {
+    if (val >= 4.5) return "good";
+    if (val >= 4.0) return "warn";
+    return "bad";
+  }
   if (val >= 95) return "good";
   if (val >= 85) return "warn";
   return "bad";
@@ -170,20 +275,28 @@ function renderCard(p) {
   const returnRateDisplay = p.ReturnRate_pct !== null && p.ReturnRate_pct !== undefined
     ? p.ReturnRate_pct.toFixed(2) + "%" : "—";
   const starsDisplay = p.AvgStarRating ? p.AvgStarRating.toFixed(1) : "—";
-  const recommendDisplay = p.RecommendRate_pct ? p.RecommendRate_pct + "%" : "—";
+  const useStarsForRec = !p.RecommendRate_pct && p.AvgStarRating;
+  const recommendDisplay = p.RecommendRate_pct
+    ? p.RecommendRate_pct + "%"
+    : (p.AvgStarRating ? p.AvgStarRating.toFixed(1) + " ★" : "—");
+  const recommendLabel = useStarsForRec ? "Rating" : "Recommend";
   const reviewsDisplay = p.ReviewsCount ? p.ReviewsCount.toLocaleString() : "—";
-  const priceDisplay = p.Price_CZK ? Math.round(p.Price_CZK).toLocaleString() + " Kč" : "";
+  const priceDisplay = priceStr(p);
   const sourceLabel = SOURCE_LABELS[p.source] || p.source || "Unknown";
   const sourceCls = p.source === "alza" ? "source-badge" : `source-badge scraper src-${p.source}`;
   const sourceBadge = `<span class="${sourceCls}">${sourceLabel}</span>`;
 
   const rankDisplay = (p.source_rank && p.source_total)
-    ? `${p.source_rank} / ${p.source_total}`
+    ? `${p.source_rank.toLocaleString()} / ${p.source_total.toLocaleString()}`
     : "—";
   const rankClass = (p.source_rank && p.source_total)
     ? (p.source_rank <= Math.ceil(p.source_total * 0.1) ? "good"
       : p.source_rank >= Math.floor(p.source_total * 0.9) ? "bad" : "")
     : "";
+  // Truncate long category names so they fit in the metric label
+  const rankLabel = p.Category
+    ? "in " + (p.Category.length > 18 ? p.Category.slice(0, 16) + "…" : p.Category)
+    : "Rank";
 
   const firstMetric = p.source === "alza"
     ? `<div class="metric">
@@ -191,7 +304,7 @@ function renderCard(p) {
         <div class="metric-value ${returnClass(p.ReturnRate_pct)}">${returnRateDisplay}</div>
        </div>`
     : `<div class="metric">
-        <div class="metric-label">Rank</div>
+        <div class="metric-label">${rankLabel}</div>
         <div class="metric-value ${rankClass}">${rankDisplay}</div>
        </div>`;
 
@@ -200,6 +313,7 @@ function renderCard(p) {
     `<span class="kw-tag">${escHtml(k)}</span>`
   ).join("");
 
+  const badge = qualityBadge(p);
   const brand = (p.Name || "").trim().split(/\s+/)[0].toLowerCase();
   const extBadge = competitorBrands.has(brand)
     ? `<span class="ext-badge" title="External ratings available">🌐 ext. ratings</span>`
@@ -207,14 +321,14 @@ function renderCard(p) {
 
   return `
   <div class="product-card" onclick="openModal(${JSON.stringify(JSON.stringify(p))})">
-    ${sourceBadge}${extBadge}
+    <div class="card-top-row">${sourceBadge}${badge}${extBadge}</div>
     <div class="card-category">${escHtml(p.Category || "")}</div>
     <div class="card-name">${escHtml(p.Name || "Unnamed")}</div>
     <div class="card-metrics">
       ${firstMetric}
       <div class="metric">
-        <div class="metric-label">Recommend</div>
-        <div class="metric-value ${recommendClass(p.RecommendRate_pct)}">${recommendDisplay}</div>
+        <div class="metric-label">${recommendLabel}</div>
+        <div class="metric-value ${recommendClass(useStarsForRec ? p.AvgStarRating : p.RecommendRate_pct, useStarsForRec)}">${recommendDisplay}</div>
       </div>
     </div>
     ${cardTags ? `<div class="card-tags">${cardTags}</div>` : ""}
@@ -302,23 +416,56 @@ function openModal(jsonStr) {
   const overlay = document.getElementById("modal-overlay");
   const content = document.getElementById("modal-content");
 
-  const totalRatings = (p.Stars5_Count || 0) + (p.Stars4_Count || 0) + (p.Stars3_Count || 0)
-    + (p.Stars2_Count || 0) + (p.Stars1_Count || 0);
+  // Parse details_json for source-specific extras
+  let dj = {};
+  try { dj = p.details_json ? JSON.parse(p.details_json) : {}; } catch(e) {}
 
-  function barPct(cnt) {
-    return totalRatings ? Math.round((cnt || 0) / totalRatings * 100) : 0;
+  // Star bars — ceneo stores star_distribution as percentages; others use raw counts
+  let starBars = "";
+  if (p.source === "ceneo") {
+    const sd = dj.star_distribution || {};
+    starBars = [5,4,3,2,1].map(n => {
+      const pct = sd[String(n)] || 0;
+      return `
+      <div class="star-bar-row">
+        <span class="star-bar-label">★${n}</span>
+        <div class="star-bar-track"><div class="star-bar-fill" style="width:${pct}%"></div></div>
+        <span class="star-bar-count">${pct}%</span>
+      </div>`;
+    }).join("");
+  } else {
+    const totalRatings = (p.Stars5_Count || 0) + (p.Stars4_Count || 0) + (p.Stars3_Count || 0)
+      + (p.Stars2_Count || 0) + (p.Stars1_Count || 0);
+    if (totalRatings > 0) {
+      starBars = [5,4,3,2,1].map(n => {
+        const cnt = p[`Stars${n}_Count`] || 0;
+        const pct = Math.round(cnt / totalRatings * 100);
+        return `
+        <div class="star-bar-row">
+          <span class="star-bar-label">★${n}</span>
+          <div class="star-bar-track"><div class="star-bar-fill" style="width:${pct}%"></div></div>
+          <span class="star-bar-count">${cnt}</span>
+        </div>`;
+      }).join("");
+    }
   }
 
-  const starBars = [5,4,3,2,1].map(n => {
-    const cnt = p[`Stars${n}_Count`] || 0;
-    const pct = barPct(cnt);
-    return `
-    <div class="star-bar-row">
-      <span class="star-bar-label">★${n}</span>
-      <div class="star-bar-track"><div class="star-bar-fill" style="width:${pct}%"></div></div>
-      <span class="star-bar-count">${cnt}</span>
-    </div>`;
-  }).join("");
+  // Ceneo feature scores block
+  const featScores = dj.feature_scores || {};
+  const featKeys = Object.keys(featScores);
+  const featBlock = featKeys.length > 0 ? `
+    <div class="modal-keywords" style="margin-top:12px">
+      <div class="modal-keywords-label">User ratings by feature</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:6px;margin-top:6px">
+        ${featKeys.map(k => `
+          <div style="background:var(--surface2);border-radius:6px;padding:6px 8px;font-size:12px">
+            <div style="color:var(--text2);margin-bottom:2px">${escHtml(k)}</div>
+            <div style="font-weight:600;color:${featScores[k]>=90?'var(--green)':featScores[k]>=75?'var(--amber)':'var(--red)'}">${featScores[k]}%</div>
+          </div>`).join("")}
+      </div>
+    </div>` : "";
+
+  const totalRatings = 0; // used below only for the old path (now handled above)
 
   const keywords = p.keywords ? JSON.parse(p.keywords) : [];
 
@@ -347,13 +494,13 @@ function openModal(jsonStr) {
       </div>
       <div class="modal-metric">
         <div class="modal-metric-label">Price</div>
-        <div class="modal-metric-value">
-          ${p.Price_CZK ? Math.round(p.Price_CZK).toLocaleString() + " Kč" : "—"}
-        </div>
+        <div class="modal-metric-value">${priceStr(p) || "—"}</div>
       </div>
     </div>
 
-    ${totalRatings > 0 ? `<div class="star-bar-wrap">${starBars}</div>` : ""}
+    ${starBars ? `<div class="star-bar-wrap">${starBars}</div>` : ""}
+
+    ${featBlock}
 
     ${p.Description ? `<div class="modal-desc">${escHtml(p.Description).substring(0, 500)}${p.Description.length > 500 ? "…" : ""}</div>` : ""}
 
@@ -561,6 +708,7 @@ function renderBrands(brands) {
 
 // ---- Event listeners ----
 document.addEventListener("DOMContentLoaded", () => {
+  buildSortOptions();   // populate sort dropdown before first fetch
   fetchStats();
   fetchCategories();
   fetchKeywords();
@@ -633,6 +781,33 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  // Products to avoid toggle
+  const avoidToggle = document.getElementById("avoid-toggle");
+  const avoidInfo   = document.getElementById("avoid-info");
+  if (avoidToggle) {
+    avoidToggle.addEventListener("click", () => {
+      avoidMode = !avoidMode;
+      avoidToggle.dataset.active = avoidMode ? "1" : "0";
+      avoidToggle.textContent = avoidMode ? "⚠️ Showing products to avoid" : "Show products to avoid";
+      avoidToggle.classList.toggle("avoid-btn-active", avoidMode);
+      if (avoidInfo) avoidInfo.style.display = avoidMode ? "" : "none";
+      currentPage = 1;
+      triggerSearch();
+    });
+  }
+
+  // Clear keyword filter button
+  const kwClearBtn = document.getElementById("kw-clear-btn");
+  if (kwClearBtn) {
+    kwClearBtn.addEventListener("click", () => {
+      activeKeyword = "";
+      document.querySelectorAll(".kw-pill").forEach(b => b.classList.remove("active"));
+      kwClearBtn.style.display = "none";
+      currentPage = 1;
+      triggerSearch();
+    });
+  }
+
   // Reset
   document.getElementById("reset-filters").addEventListener("click", () => {
     document.getElementById("search-input").value = "";
@@ -642,7 +817,15 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("filter-source").value = "";
     activeKeyword = "";
     document.querySelectorAll(".kw-pill").forEach(b => b.classList.remove("active"));
-    document.getElementById("sort-by").value = "ReturnRate_pct";
+    if (kwClearBtn) kwClearBtn.style.display = "none";
+    // Reset avoid mode
+    avoidMode = false;
+    if (avoidToggle) { avoidToggle.dataset.active = "0"; avoidToggle.textContent = "Show products to avoid"; avoidToggle.classList.remove("avoid-btn-active"); }
+    if (avoidInfo) avoidInfo.style.display = "none";
+    document.getElementById("sort-by").value = "RecommendRate_pct_desc";
+    // Restore recommend filter (hidden when amazon_us was selected)
+    const recGroup = document.getElementById("recommend-filter-group");
+    if (recGroup) recGroup.style.display = "";
     starSlider.value = 0; document.getElementById("stars-val").textContent = "Any";
     returnSlider.value = 1.4; document.getElementById("return-val").textContent = "1.4%";
     reviewsSlider.value = 0; document.getElementById("reviews-val").textContent = "Any";
@@ -704,7 +887,29 @@ document.addEventListener("DOMContentLoaded", () => {
     triggerSearchAndClose();
   });
 
-  ["filter-category", "filter-source", "sort-by"].forEach(id => {
+  document.getElementById("filter-source").addEventListener("change", () => {
+    const src = document.getElementById("filter-source").value;
+    const isAmazonUS = src === "amazon_us";
+
+    // Auto-switch sort to "Most reviewed" for amazon_us (RecommendRate is always null there)
+    const sortSel = document.getElementById("sort-by");
+    if (isAmazonUS && sortSel.value === "RecommendRate_pct_desc") {
+      sortSel.value = "ReviewsCount_desc";
+    } else if (!isAmazonUS && sortSel.value === "ReviewsCount_desc") {
+      sortSel.value = "RecommendRate_pct_desc";
+    }
+
+    // Hide recommend rate filter for amazon_us (all products have NULL there)
+    const recGroup = document.getElementById("recommend-filter-group");
+    if (recGroup) recGroup.style.display = isAmazonUS ? "none" : "";
+
+    // Re-fetch categories in the correct country when source changes
+    document.getElementById("filter-main-category").value = "";
+    populateSubcategories("");
+    fetchCategories();
+    triggerSearchAndClose();
+  });
+  ["filter-category", "sort-by"].forEach(id => {
     document.getElementById(id).addEventListener("change", triggerSearchAndClose);
   });
   [starSlider, returnSlider, reviewsSlider, recommendSlider].forEach(sl => {

@@ -1,0 +1,33 @@
+# Database files — live on Fly volume, never in the image
+**/*.db
+**/*.db-wal
+**/*.db-shm
+**/*.db-journal
+
+# Backup folder (large DB backups)
+**/backup/
+backup/
+
+# Python cache
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Logs & temp
+*.log
+/tmp/
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# HuggingFace cache
+**/.hf_cache/
+
+# Git
+.git/
