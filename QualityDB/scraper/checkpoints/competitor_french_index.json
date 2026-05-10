@@ -1,0 +1,690 @@
+{
+  "datasets_discovered": [
+    {
+      "id": "67ee61cc7eb57061b6fce6a3",
+      "title": "Nilfisk - Indice de réparabilité",
+      "csv_url": "https://static.data.gouv.fr/resources/nilfisk-indice-de-reparabilite/20250403-102420/ecotaxe-data-gouv-a-deposer.csv",
+      "organization": ""
+    },
+    {
+      "id": "67ff7ff67a8f86cc204db0fd",
+      "title": "Indice de réparabilité (organisation POLTI)",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-organisation-polti/20250416-100126/data.csv",
+      "organization": "POLTI"
+    },
+    {
+      "id": "69ef698cc694bf3ed6168cd2",
+      "title": "Indice de réparabilité (organisation SMEG)",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-organisation-smeg/20260427-141529/aa-compiled-reparabilite-grid-smeg.csv",
+      "organization": "SMEG FRANCE"
+    },
+    {
+      "id": "677cf80b64fc4643a90f122d",
+      "title": "Indices de réparabilité Outillage Bosch",
+      "csv_url": "https://static.data.gouv.fr/resources/indices-de-reparabilite-outillage-bosch/20260507-142937/data.csv",
+      "organization": "Robert Bosch France SAS"
+    },
+    {
+      "id": "66d9883def268968964e00db",
+      "title": "Indice de réparabilité  - BRANDT FRANCE",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-brandt-france/20251023-135900/data.csv",
+      "organization": "BRANDT FRANCE"
+    },
+    {
+      "id": "69b2d28880209ca8e0338929",
+      "title": "Indice de réparabilité (organisation Hisense)",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-organisation-hisense/20260312-144945/data.csv",
+      "organization": "Hisense"
+    },
+    {
+      "id": "6996dbee9226d12b8e67efe4",
+      "title": "Indice de réparabilité (organisation BOULANGER)",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-organisation-boulanger-1/20260219-094622/data.csv",
+      "organization": "BOULANGER"
+    },
+    {
+      "id": "69bab656addae3e1492f212f",
+      "title": "Indice de réparabilité (organisation Hisense)",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-organisation-hisense-2/20260318-142734/data.csv",
+      "organization": "Hisense"
+    },
+    {
+      "id": "67ee6240da98735f30c83c9b",
+      "title": "Indice de réparabilité (organisation NILFISK)",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-organisation-nilfisk-5/20250403-102815/data.csv",
+      "organization": "NILFISK"
+    },
+    {
+      "id": "69b2d28c63783a6a1c0c5d15",
+      "title": "Indice de réparabilité (organisation Hisense)",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-organisation-hisense-1/20260312-144948/data.csv",
+      "organization": "Hisense"
+    },
+    {
+      "id": "6554a0154eccc8c44bd02ca7",
+      "title": "Indice de réparabilité (organisation RIBIMEX)",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-organisation-ribimex/20231115-104022/data.csv",
+      "organization": "RIBIMEX"
+    },
+    {
+      "id": "69860acc8bc86d905beaee67",
+      "title": "Indice de réparabilité (organisation ADEOSERVICES)",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-organisation-adeoservices/20260206-153748/data.csv",
+      "organization": "ADEOSERVICES"
+    },
+    {
+      "id": "686cd770a6b2a2ca0f7d2d2f",
+      "title": "Indice de réparabilité (organisation Fairphone)",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-organisation-fairphone-1/20250708-084159/fp6-repairability-donnees-indice-reparabilite-fairphone-2-.csv",
+      "organization": "Fairphone"
+    },
+    {
+      "id": "6756b9ade34efeb358f26576",
+      "title": "Indice de réparabilité (organisation Beko France)",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-organisation-beko-france-1/20260310-132925/data.csv",
+      "organization": "Beko France"
+    },
+    {
+      "id": "69c2b91fba387e141ce58058",
+      "title": "Indice de réparabilité (Groupe SEB France)",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-groupe-seb-france-1/20260324-161735/donnees-schema-indice-reparabilite.csv",
+      "organization": "Groupe SEB France"
+    },
+    {
+      "id": "69660fd55ab997a85f43dfed",
+      "title": "Indice de réparabilité (organisation BTLec EST)",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-organisation-btlec-est-6/20260113-092645/data.csv",
+      "organization": "BTLec EST"
+    },
+    {
+      "id": "69c55e9f883477cd8b5d8b6d",
+      "title": "Indice de réparabilité (Groupe SEB Retailing)",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-groupe-seb-retailing/20260326-162815/donnees-schema-indice-reparabilite.csv",
+      "organization": "Groupe SEB Retailing"
+    },
+    {
+      "id": "6945705d4eaca447a9b0e5ae",
+      "title": "Indice de réparabilité (organisation GLOBAL APPLIUS)",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-organisation-global-applius-1/20251219-153349/data.csv",
+      "organization": "GLOBAL APPLIUS"
+    },
+    {
+      "id": "6878c0c871c946670ff94ea6",
+      "title": "Indice de réparabilité (organisation BTLec EST)",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-organisation-btlec-est/20250717-092217/data.csv",
+      "organization": "BTLec EST"
+    },
+    {
+      "id": "681b29f671d14ef719c11ad6",
+      "title": "Indice de réparabilité (organisation Haier France)",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-organisation-haier-france/20260427-144552/aa-compiled-reparabilite-grid-haier-france.csv",
+      "organization": "Haier France"
+    },
+    {
+      "id": "685c130b0aa4759e09b6d2e6",
+      "title": "Indice de réparabilité (organisation Dell SAS)",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-organisation-dell-sas-1/20250625-151731/data.csv",
+      "organization": "Dell SAS"
+    },
+    {
+      "id": "689463823224991549a9b90c",
+      "title": "Indice de réparabilité (organisation INGRAM MICRO)",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-organisation-ingram-micro/20250807-085224/data.csv",
+      "organization": "INGRAM MICRO"
+    },
+    {
+      "id": "679b386d366d51c402197ed5",
+      "title": "Indice de réparabilité (organisation Daan Technologies)",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-organisation-daan-technologies/20250206-073329/data.csv",
+      "organization": "Daan Technologies"
+    },
+    {
+      "id": "69c55c09754cc9ad02d94de5",
+      "title": "Indice de réparabilité (SEB International Services)",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-seb-international-services/20260326-162312/donnees-schema-indice-reparabilite.csv",
+      "organization": "SEB International Services"
+    },
+    {
+      "id": "68dfbb283be0fc84e3dddc51",
+      "title": "Indice de réparabilité (organisation BTLec EST)",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-organisation-btlec-est-2/20251003-120145/data.csv",
+      "organization": "BTLec EST"
+    },
+    {
+      "id": "6759b2276ed603aa7cb195ee",
+      "title": "Indice de réparabilité (organisation BSH ELECTROMENAGER)",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-organisation-bsh-electromenager-1/20260429-095535/aa-compiled-reparabilite-grid-bsh.csv",
+      "organization": "BSH ELECTROMENAGER"
+    },
+    {
+      "id": "687fad65e0431590cf08f63f",
+      "title": "Indice de réparabilité (organisation BTLec EST)",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-organisation-btlec-est-1/20250722-152526/data.csv",
+      "organization": "BTLec EST"
+    },
+    {
+      "id": "675c50c7173fff77fc6be41a",
+      "title": "Indice de réparabilité (organisation Beko France)",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-organisation-beko-france/20241213-152040/data.csv",
+      "organization": "Beko France"
+    },
+    {
+      "id": "6777bcd5059392f07d382ddf",
+      "title": "Indice de réparabilité (organisation GLOBAL APPLIUS)",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-organisation-global-applius/20250110-085919/data.csv",
+      "organization": "GLOBAL APPLIUS"
+    },
+    {
+      "id": "697a1de9c4090c69711cc58d",
+      "title": "Indice de réparabilité (organisation Dell SAS)",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-organisation-dell-sas-2/20260128-143209/data.csv",
+      "organization": "Dell SAS"
+    },
+    {
+      "id": "69ca3f3f2e7ce6ebd80fa95a",
+      "title": "Indice de réparabilité (Groupe SEB Retailing)",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-groupe-seb-retailing-1/20260330-091544/donnees-schema-indice-reparabilite-aspi-robots-2026.csv",
+      "organization": "Groupe SEB Retailing"
+    },
+    {
+      "id": "685b258be19c425abb0b0712",
+      "title": "Indice de réparabilité (organisation Dell SAS)",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-organisation-dell-sas/20250624-222412/data.csv",
+      "organization": "Dell SAS"
+    },
+    {
+      "id": "68e7a30a1978964ce8e20fbe",
+      "title": "Indice de réparabilité (organisation BTLec EST)",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-organisation-btlec-est-3/20251009-115659/data.csv",
+      "organization": "BTLec EST"
+    },
+    {
+      "id": "6862b2dbc0a6755dae3e1322",
+      "title": "Indice de réparabilité (organisation Groupe SEB France)",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-organisation-groupe-seb-france-1/20250630-155259/data.csv",
+      "organization": "Groupe SEB France"
+    },
+    {
+      "id": "68f9112849f22146ff6844a2",
+      "title": "Indice de réparabilité (organisation SEB International Services)",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-organisation-seb-international-services-1/20251022-171520/data.csv",
+      "organization": "SEB International Services"
+    },
+    {
+      "id": "68f910946632ab8be65f8971",
+      "title": "Indice de réparabilité (organisation Groupe SEB Retailing)",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-organisation-groupe-seb-retailing-4/20251022-171252/data.csv",
+      "organization": "Groupe SEB Retailing"
+    },
+    {
+      "id": "67adb94e6098dddf87a0dc2e",
+      "title": "Indice de réparabilité (organisation MIELE S.A.S)",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-organisation-miele-s-a-s/20251008-151758/data.csv",
+      "organization": "MIELE S.A.S"
+    },
+    {
+      "id": "6860fa6e82f7c2822334a6ce",
+      "title": "Indice de réparabilité (organisation Groupe SEB Retailing)",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-organisation-groupe-seb-retailing/20250910-180750/data.csv",
+      "organization": "Groupe SEB Retailing"
+    },
+    {
+      "id": "6862b3cc296e5373603f16dd",
+      "title": "Indice de réparabilité (organisation Groupe SEB Retailing)",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-organisation-groupe-seb-retailing-2/20250630-155701/data.csv",
+      "organization": "Groupe SEB Retailing"
+    },
+    {
+      "id": "68f8d87f8d5320b9c36d176f",
+      "title": "Indice de réparabilité (organisation Groupe SEB Retailing)",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-organisation-groupe-seb-retailing-3/20251022-131336/data.csv",
+      "organization": "Groupe SEB Retailing"
+    },
+    {
+      "id": "685e6e7586146f4ca9892d5a",
+      "title": "Indice de réparabilité (organisation Groupe SEB France)",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-organisation-groupe-seb-france-3/20250627-101817/data-set-test-pour-les-aspis-filaires-gsf.csv",
+      "organization": "Groupe SEB France"
+    },
+    {
+      "id": "68ed13b174f4a7cc4f8a465a",
+      "title": "Indice de réparabilité (organisation SEB International Services)",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-organisation-seb-international-services-3/20251013-145857/data.csv",
+      "organization": "SEB International Services"
+    },
+    {
+      "id": "68b5c399834499fdea790135",
+      "title": "Indice de réparabilité (organisation HP FRANCE SAS)",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-organisation-hp-france-sas/20251126-094516/data.csv",
+      "organization": "HP FRANCE SAS"
+    },
+    {
+      "id": "68624ac07700d62244cd633b",
+      "title": "Indice de réparabilité (organisation SEB International Services)",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-organisation-seb-international-services/20250910-180703/data.csv",
+      "organization": "SEB International Services"
+    },
+    {
+      "id": "69b41de8a55c2f1bb7c68c6b",
+      "title": "Indice de réparabilité (organisation SOURCING ET CREATION )",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-organisation-sourcing-et-creation/20260313-142337/data.csv",
+      "organization": "SOURCING ET CREATION "
+    },
+    {
+      "id": "6909bb68e5d1c9cb6ab95d1a",
+      "title": "Indice de réparabilité (organisation Groupe SEB France)",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-organisation-groupe-seb-france-4/20251104-083801/data.csv",
+      "organization": "Groupe SEB France"
+    },
+    {
+      "id": "6819d8e0eb5737d25e8cc339",
+      "title": "Indice de réparabilité (organisation Groupe SEB France)",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-organisation-groupe-seb-france/20250910-180838/data.csv",
+      "organization": "Groupe SEB France"
+    },
+    {
+      "id": "6862996a4d2c5928ef1927e7",
+      "title": "Indice de réparabilité (organisation Groupe SEB Retailing)",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-organisation-groupe-seb-retailing-1/20250630-140426/data.csv",
+      "organization": "Groupe SEB Retailing"
+    },
+    {
+      "id": "6862b44755bd75267b6b27da",
+      "title": "Indice de réparabilité (organisation SEB International Services)",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-organisation-seb-international-services-2/20250910-180413/gsf-nouveaux-non-filaires-corriges-20-08-25.csv",
+      "organization": "SEB International Services"
+    },
+    {
+      "id": "6888719eff31998e1d909027",
+      "title": "Indice de réparabilité (organisation ASUS Global PTE LTD)",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-organisation-asus-global-pte-ltd/20250729-070047/data.csv",
+      "organization": "ASUS Global PTE LTD"
+    },
+    {
+      "id": "6889e39b2d2844117e819fc1",
+      "title": "Indice de réparabilité (organisation ASUS Global PTE LTD)",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-organisation-asus-global-pte-ltd-1/20250730-091923/data.csv",
+      "organization": "ASUS Global PTE LTD"
+    },
+    {
+      "id": "67ffd85da5988f7bde3068bb",
+      "title": "Indice de réparabilité (Vestel France) - Lave-Linge TLL147BI",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-vestel-france-lave-linge-tll147bi/20250416-161837/data.csv",
+      "organization": "Vestel France"
+    },
+    {
+      "id": "685ac28be8c33b56be4e83e1",
+      "title": "Indice de réparabilité (Vestel France)  - Lave-Linge TLL148BI",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-vestel-france-lave-linge-tll148bi-2/20250624-152148/data.csv",
+      "organization": "Vestel France"
+    },
+    {
+      "id": "67ffd6f63f2d5b371e4c9acd",
+      "title": "Indice de réparabilité (Vestel France) - Lave-Linge TLL129WA",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-vestel-france-lave-linge-tll129wa/20250416-161238/data.csv",
+      "organization": "Vestel France"
+    },
+    {
+      "id": "67ffdd59ed70444ce77f2a3c",
+      "title": "Indice de réparabilité (Vestel France) - Lave-Linge TLL148W",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-vestel-france-lave-linge-tll148w/20250416-163953/data.csv",
+      "organization": "Vestel France"
+    },
+    {
+      "id": "6889e3ffe11010a5cd529650",
+      "title": "Indice de réparabilité (organisation ASUS Global PTE LTD)",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-organisation-asus-global-pte-ltd-2/20250730-092104/data.csv",
+      "organization": "ASUS Global PTE LTD"
+    },
+    {
+      "id": "685abe02c073685e348ae334",
+      "title": "Indice de réparabilité (Vestel France) - Lave-Linge TLL148BI",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-vestel-france-lave-linge-tll148bi-1/20250624-150226/data.csv",
+      "organization": "Vestel France"
+    },
+    {
+      "id": "69ca41c18e332b1c833bdc82",
+      "title": "Indice de réparabilité (SEB International Services) - New 2026",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-seb-international-services-new-2026/20260330-092626/donnees-schema-indice-reparabilite.csv",
+      "organization": "SEB International Services"
+    },
+    {
+      "id": "67ffd5015dd09c99facce0a3",
+      "title": "Indice de réparabilité (Vestel France) - Lave-Linge TLL128W",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-vestel-france-lave-linge-tll128w/20250416-160417/data.csv",
+      "organization": "Vestel France"
+    },
+    {
+      "id": "69ca3e973be95ed6862d3150",
+      "title": "Indice de réparabilité (Groupe SEB France) - New 2026",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-groupe-seb-france-new-2026/20260330-091255/donnees-schema-indice-reparabilite.csv",
+      "organization": "Groupe SEB France"
+    },
+    {
+      "id": "69f9dee136f278abfcd33694",
+      "title": "Indice de réparabilité (organisation FNAC DARTY PARTICIPATIONS ET SERVICES)",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-organisation-fnac-darty-participations-et-services/20260505-121322/data.csv",
+      "organization": "FNAC DARTY PARTICIPATIONS ET SERVICES"
+    },
+    {
+      "id": "69d65bb70eeff32674043a85",
+      "title": "Indice de réparabilité LAVE VAISSELLE (organisation SOURCING ET CREATION )",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-lave-vaisselle-organisation-sourcing-et-creation/20260420-132951/data.csv",
+      "organization": "SOURCING ET CREATION "
+    },
+    {
+      "id": "67ff9d00601d6fe81026b970",
+      "title": "Indice de réparabilité (Vestel France) - Lave-Vaisselle QW-NA4YF44EAW-FR",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-vestel-france-lave-vaisselle-qw-na4yf44eaw-fr-1/20250416-120520/data.csv",
+      "organization": "Vestel France"
+    },
+    {
+      "id": "67ffc64cd3806a4cc4b00da1",
+      "title": "Indice de réparabilité (Vestel France) - Lave-Linge ES-DA214EWDA-FR",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-vestel-france-lave-linge-es-da214ewda-fr/20250416-150132/data.csv",
+      "organization": "Vestel France"
+    },
+    {
+      "id": "6800f39c624cc715f17efd18",
+      "title": "Indice de réparabilité (Vestel France) -Lave-Linge ES-NFB814EWDA-FR",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-vestel-france-lave-linge-es-nfb814ewda-fr/20250417-122708/data.csv",
+      "organization": "Vestel France"
+    },
+    {
+      "id": "67ffbb4d705e4b12ed7ab0ab",
+      "title": "Indice de réparabilité (Vestel France) - Lave-Linge ES-NFB214CWDA-FR",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-vestel-france-lave-linge-es-nfb214cwda-fr/20250416-141437/data.csv",
+      "organization": "Vestel France"
+    },
+    {
+      "id": "67ff99aee20ccae4d7db6a4d",
+      "title": "Indice de réparabilité (Vestel France) - Lave-Vaisselle QW-NA4YF44EAA-FR",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-vestel-france-lave-vaisselle-qw-na4yf44eaa-fr-1/20250416-115110/data.csv",
+      "organization": "Vestel France"
+    },
+    {
+      "id": "67ffbea27c42b552c9a9f1bc",
+      "title": "Indice de réparabilité (Vestel France) - Lave-Linge ES-NFA914BWNA-FR",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-vestel-france-lave-linge-es-nfa914bwna-fr/20250416-142906/data.csv",
+      "organization": "Vestel France"
+    },
+    {
+      "id": "68d16953f1626aeb60307d21",
+      "title": "Indice de réparabilité (Vestel France) - Lave-Linge WM-FC9594W1A-FR",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-vestel-france-lave-linge-wm-fc9594w1a-fr/20250922-152051/data.csv",
+      "organization": "Vestel France"
+    },
+    {
+      "id": "67ffaf06cf666990f29b3313",
+      "title": "Indice de réparabilité (Vestel France) - Lave-Linge WM-FC0634W1A-FR",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-vestel-france-lave-linge-wm-fc0634w1a-fr/20250416-132215/data.csv",
+      "organization": "Vestel France"
+    },
+    {
+      "id": "68d168e29da5ba89f50d5e8c",
+      "title": "Indice de réparabilité (Vestel France) - Lave-Linge WM-FC2694W0A-FR",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-vestel-france-lave-linge-wm-fc2694w0a-fr/20250922-151858/data.csv",
+      "organization": "Vestel France"
+    },
+    {
+      "id": "697242f437471f0c58334369",
+      "title": "Indice de réparabilité (Vestel France) - Lave-linge ES-NFL014CWNA-FR",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-vestel-france-lave-linge-es-nfl014cwna-fr-1/20260122-153204/data.csv",
+      "organization": "Vestel France"
+    },
+    {
+      "id": "67ff70f54a41c1f615349c08",
+      "title": "Indice de réparabilité (Vestel France) - Lave-Vaisselle QW-NA4YF44AI-FR",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-vestel-france-lave-vaisselle-qw-na4yf33ai-fr/20250416-085726/data.csv",
+      "organization": "Vestel France"
+    },
+    {
+      "id": "67ffac5a79383177a381157c",
+      "title": "Indice de réparabilité (Vestel France) - Lave-Linge ES-NIB814BWNA-FR",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-vestel-france-lave-linge-es-nib814bwna-fr/20250416-131050/data.csv",
+      "organization": "Vestel France"
+    },
+    {
+      "id": "67ffa00f009338ecfc84d3d9",
+      "title": "Indice de réparabilité (Vestel France) - Lave-Vaisselle QW-NI1EI45EX-FR",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-vestel-france-qw-ni1ei45ex-fr/20250416-121823/data.csv",
+      "organization": "Vestel France"
+    },
+    {
+      "id": "67ee8279567c4c98ad0b0fbd",
+      "title": "Indice de réparabilité (Vestel) - Lave-Linge hublot ES-NFB814CWDA-FR",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-vestel-lave-linge-hublot-es-nfb814cwda-fr/20250403-124337/data.csv",
+      "organization": "Vestel France"
+    },
+    {
+      "id": "67ffada4c7736017747ef886",
+      "title": "Indice de réparabilité (Vestel France) - Lave-Linge ES-NIB714BWNA-FR",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-vestel-france-es-nib714bwna-fr/20250416-131621/data.csv",
+      "organization": "Vestel France"
+    },
+    {
+      "id": "67ff748b818cfda0fad8201c",
+      "title": "Indice de réparabilité (Vestel France) - Lave-Vaisselle QW-NA4YF44AW-FR",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-vestel-france-lave-vaisselle-qw-na4yf44aw-fr-1/20250416-091244/data.csv",
+      "organization": "Vestel France"
+    },
+    {
+      "id": "6964cae4826e1e0c25013ed8",
+      "title": "Indice de réparabilité (Vestel France) - Lave-vaisselle QW-NA1EF49D3W-FR",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-vestel-france-lave-vaisselle-qw-na1ef49d3w-fr/20260112-102020/data.csv",
+      "organization": "Vestel France"
+    },
+    {
+      "id": "67fe5b5968ee0bb132c0b875",
+      "title": "Indice de réparabilité (Vestel France) - Lave-Vaisselle QW-NA3YF42AA-FR",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-vestel-france-lave-vaisselle-qw-na3yf42aa-fr-1/20250415-131257/data.csv",
+      "organization": "Vestel France"
+    },
+    {
+      "id": "6965126aa9f063bd20ed4751",
+      "title": "Indice de réparabilité (Vestel France) - Lave-linge FC-8514W1NA-FR",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-vestel-france-lave-linge-fc-8514w1na-fr/20260112-152530/data.csv",
+      "organization": "Vestel France"
+    },
+    {
+      "id": "655f75385bd28e69e61ac1f0",
+      "title": "Indice de réparabilité (organisation HONDA MOTOR EUROPE LTD SUCCURSALE FRANCE)",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-organisation-honda-motor-europe-ltd-succursale-france/20240110-104054/data.csv",
+      "organization": "HONDA MOTOR EUROPE LTD SUCCURSALE FRANCE"
+    },
+    {
+      "id": "6859569d9977d77cff6a3e2d",
+      "title": "Indice de réparabilité (Vestel France) - Lave-Linge ES-NFB814AWNA-FR",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-vestel-france-lave-linge-es-nfb814awna-fr/20250623-132901/data.csv",
+      "organization": "Vestel France"
+    },
+    {
+      "id": "67ff9ea00aff226e715e6ab3",
+      "title": "Indice de réparabilité (Vestel France) - Lave-Vaisselle QW-NI1EI45E8X-FR",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-vestel-france-lave-vaisselle-qw-ni1ei45e8x-fr-1/20250416-121216/data.csv",
+      "organization": "Vestel France"
+    },
+    {
+      "id": "6769697cb6190d31c51eeebd",
+      "title": "Indice de réparabilité Lave vaisselle (organisation European Appliances France SAS)",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-lave-vaisselle-organisation-european-appliances-france-sas/20250729-091400/data.csv",
+      "organization": "European Appliances France SAS"
+    },
+    {
+      "id": "67ffb21bdbb0daa27eefac7f",
+      "title": "Indice de réparabilité (Vestel France) - Lave-Linge ES-NFL814AWNA-FR",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-vestel-france-lave-linge-es-nfl814awna-fr/20250416-133523/data.csv",
+      "organization": "Vestel France"
+    },
+    {
+      "id": "67ff68666c72f97478e1dc1c",
+      "title": "Indice de réparabilité (Vestel France) - Lave-Vaisselle QW-NA3YF42AW-FR",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-vestel-france-lave-vaisselle-qw-na3yf42aw-fr-1/20250416-082054/data.csv",
+      "organization": "Vestel France"
+    },
+    {
+      "id": "67ffbcdf74b5438e5b2f3d30",
+      "title": "Indice de réparabilité (Vestel France) - Lave-Linge ES-NFB014CWNA-FR",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-vestel-france-lave-linge-es-nfb014cwna-fr-1/20250416-142120/data.csv",
+      "organization": "Vestel France"
+    },
+    {
+      "id": "66e93c3609e8e1084058b1b4",
+      "title": "Fichiers consolidés des données respectant le schéma \"Indice de réparabilité\"",
+      "csv_url": "https://static.data.gouv.fr/resources/fichiers-consolides-des-donnees-respectant-le-schema-indice-de-reparabilite/20260507-111930/ref-table-etalab-schema-indice-reparabilite.csv",
+      "organization": "data.gouv.fr"
+    },
+    {
+      "id": "6964d174692ed64033c6f90d",
+      "title": "Indice de réparabilité (Vestel France)  - Lave-linge WM-FB8514W1A-FR",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-vestel-france-lave-linge-wm-fb8514w1a-fr/20260112-104821/data.csv",
+      "organization": "Vestel France"
+    },
+    {
+      "id": "67ffc4b14eefbcc33f122cab",
+      "title": "Indice de réparabilité (Vestel France) - Lave-Linge ES-DB114EWNA-FR",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-vestel-france-lave-linge-es-db114ewna-fr/20250416-145441/data.csv",
+      "organization": "Vestel France"
+    },
+    {
+      "id": "67ffbcdc5b22ab8e336ebd79",
+      "title": "Indice de réparabilité (Vestel France) - Lave-Linge ES-NFB014CWNA-FR",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-vestel-france-lave-linge-es-nfb014cwna-fr/20250416-142118/data.csv",
+      "organization": "Vestel France"
+    },
+    {
+      "id": "67ff6eb2c2dc93540a8127ce",
+      "title": "Indice de réparabilité (Vestel France) - Lave-Vaisselle QW-NA4YF42AW-FR",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-vestel-france-lave-vaisselle-qw-na4yf42aw-fr-1/20250416-084746/data.csv",
+      "organization": "Vestel France"
+    },
+    {
+      "id": "67ffc98cc7149936b6daa080",
+      "title": "Indice de réparabilité (Vestel France) - Lave-Linge ES-NFL914AWNA-FR",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-vestel-france-lave-linge-es-nfl914awna-fr/20250416-151524/data.csv",
+      "organization": "Vestel France"
+    },
+    {
+      "id": "67ffb7dfb9624e70b6ba54ce",
+      "title": "Indice de réparabilité (Vestel France) - Lave-Linge ES-NFB914AWNA-FR",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-vestel-france-lave-linge-es-nfb914awna-fr/20250416-135959/data.csv",
+      "organization": "Vestel France"
+    },
+    {
+      "id": "677cf4e34994ebdab82d285b",
+      "title": "Indice de réparabilité Lave Linge Top (organisation European Appliances France SAS)",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-lave-linge-topp-organisation-european-appliances-france-sas/20250107-093613/tdlrs6261fr-859991698000.csv",
+      "organization": "European Appliances France SAS"
+    },
+    {
+      "id": "67e553bb80cd128d0dcadfef",
+      "title": "Indice de réparabilité (Vestel France) - Lave-Linge hublot ES-NFB914EWDA-FR",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-vestel-france-lave-linge-hublot-es-nfb914ewda-fr/20250327-133348/data.csv",
+      "organization": "Vestel France"
+    },
+    {
+      "id": "677ceb73c60ff57fc9743aef",
+      "title": "Indice de réparabilité Lave Linge front  (organisation European Appliances France SAS)",
+      "csv_url": "https://static.data.gouv.fr/resources/indice-de-reparabilite-lave-linge-front-organisation-european-appliances-france-sas/20250107-090101/test-ffbs9479wvfr-859991697060.csv",
+      "organization": "European Appliances France SAS"
+    }
+  ],
+  "67ee61cc7eb57061b6fce6a3": "done",
+  "67ff7ff67a8f86cc204db0fd": "done",
+  "69ef698cc694bf3ed6168cd2": "done",
+  "677cf80b64fc4643a90f122d": "done",
+  "66d9883def268968964e00db": "done",
+  "69b2d28880209ca8e0338929": "done",
+  "6996dbee9226d12b8e67efe4": "done",
+  "69bab656addae3e1492f212f": "done",
+  "67ee6240da98735f30c83c9b": "done",
+  "69b2d28c63783a6a1c0c5d15": "done",
+  "6554a0154eccc8c44bd02ca7": "done",
+  "69860acc8bc86d905beaee67": "done",
+  "686cd770a6b2a2ca0f7d2d2f": "done",
+  "6756b9ade34efeb358f26576": "done",
+  "69c2b91fba387e141ce58058": "done",
+  "69660fd55ab997a85f43dfed": "done",
+  "69c55e9f883477cd8b5d8b6d": "done",
+  "6945705d4eaca447a9b0e5ae": "done",
+  "6878c0c871c946670ff94ea6": "done",
+  "681b29f671d14ef719c11ad6": "done",
+  "685c130b0aa4759e09b6d2e6": "done",
+  "689463823224991549a9b90c": "done",
+  "679b386d366d51c402197ed5": "done",
+  "69c55c09754cc9ad02d94de5": "done",
+  "68dfbb283be0fc84e3dddc51": "done",
+  "6759b2276ed603aa7cb195ee": "done",
+  "687fad65e0431590cf08f63f": "done",
+  "675c50c7173fff77fc6be41a": "done",
+  "6777bcd5059392f07d382ddf": "done",
+  "697a1de9c4090c69711cc58d": "done",
+  "69ca3f3f2e7ce6ebd80fa95a": "done",
+  "685b258be19c425abb0b0712": "done",
+  "68e7a30a1978964ce8e20fbe": "done",
+  "6862b2dbc0a6755dae3e1322": "done",
+  "68f9112849f22146ff6844a2": "done",
+  "68f910946632ab8be65f8971": "done",
+  "67adb94e6098dddf87a0dc2e": "done",
+  "6860fa6e82f7c2822334a6ce": "done",
+  "6862b3cc296e5373603f16dd": "done",
+  "68f8d87f8d5320b9c36d176f": "done",
+  "685e6e7586146f4ca9892d5a": "done",
+  "68ed13b174f4a7cc4f8a465a": "done",
+  "68b5c399834499fdea790135": "done",
+  "68624ac07700d62244cd633b": "done",
+  "69b41de8a55c2f1bb7c68c6b": "done",
+  "6909bb68e5d1c9cb6ab95d1a": "done",
+  "6819d8e0eb5737d25e8cc339": "done",
+  "6862996a4d2c5928ef1927e7": "done",
+  "6862b44755bd75267b6b27da": "done",
+  "6888719eff31998e1d909027": "done",
+  "6889e39b2d2844117e819fc1": "done",
+  "67ffd85da5988f7bde3068bb": "done",
+  "685ac28be8c33b56be4e83e1": "done",
+  "67ffd6f63f2d5b371e4c9acd": "done",
+  "67ffdd59ed70444ce77f2a3c": "done",
+  "6889e3ffe11010a5cd529650": "done",
+  "685abe02c073685e348ae334": "done",
+  "69ca41c18e332b1c833bdc82": "done",
+  "67ffd5015dd09c99facce0a3": "done",
+  "69ca3e973be95ed6862d3150": "done",
+  "69f9dee136f278abfcd33694": "done",
+  "69d65bb70eeff32674043a85": "done",
+  "67ff9d00601d6fe81026b970": "done",
+  "67ffc64cd3806a4cc4b00da1": "done",
+  "6800f39c624cc715f17efd18": "done",
+  "67ffbb4d705e4b12ed7ab0ab": "done",
+  "67ff99aee20ccae4d7db6a4d": "done",
+  "67ffbea27c42b552c9a9f1bc": "done",
+  "68d16953f1626aeb60307d21": "done",
+  "67ffaf06cf666990f29b3313": "done",
+  "68d168e29da5ba89f50d5e8c": "done",
+  "697242f437471f0c58334369": "done",
+  "67ff70f54a41c1f615349c08": "done",
+  "67ffac5a79383177a381157c": "done",
+  "67ffa00f009338ecfc84d3d9": "done",
+  "67ee8279567c4c98ad0b0fbd": "done",
+  "67ffada4c7736017747ef886": "done",
+  "67ff748b818cfda0fad8201c": "done",
+  "6964cae4826e1e0c25013ed8": "done",
+  "67fe5b5968ee0bb132c0b875": "done",
+  "6965126aa9f063bd20ed4751": "done",
+  "655f75385bd28e69e61ac1f0": "done",
+  "6859569d9977d77cff6a3e2d": "done",
+  "67ff9ea00aff226e715e6ab3": "done",
+  "6769697cb6190d31c51eeebd": "done",
+  "67ffb21bdbb0daa27eefac7f": "done",
+  "67ff68666c72f97478e1dc1c": "done",
+  "67ffbcdf74b5438e5b2f3d30": "done",
+  "66e93c3609e8e1084058b1b4": "done",
+  "6964d174692ed64033c6f90d": "done",
+  "67ffc4b14eefbcc33f122cab": "done",
+  "67ffbcdc5b22ab8e336ebd79": "done",
+  "67ff6eb2c2dc93540a8127ce": "done",
+  "67ffc98cc7149936b6daa080": "done",
+  "67ffb7dfb9624e70b6ba54ce": "done",
+  "677cf4e34994ebdab82d285b": "done",
+  "67e553bb80cd128d0dcadfef": "done",
+  "677ceb73c60ff57fc9743aef": "done"
+}

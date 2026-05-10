@@ -35,6 +35,12 @@
   </div>
 </div>
 
+<!-- TAB BAR -->
+<div class="tab-bar">
+  <button class="tab-btn active" id="tab-products" onclick="switchTab('products')">📦 Products</button>
+  <button class="tab-btn"        id="tab-brands"   onclick="switchTab('brands')">🏷️ Brand Ratings</button>
+</div>
+
 <!-- MOBILE FILTER TOGGLE -->
 <button class="mobile-filter-btn" id="mobile-filter-btn">
   <span>⚙</span> Filters
@@ -184,6 +190,57 @@
   <div class="modal" id="modal">
     <button class="modal-close" id="modal-close">✕</button>
     <div class="modal-content" id="modal-content"></div>
+  </div>
+</div>
+
+<!-- BRANDS PANEL (hidden by default) -->
+<div id="brands-panel" style="display:none">
+  <div class="brands-toolbar">
+    <div class="brands-search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="brands-search" placeholder="Search brand…" autocomplete="off" />
+    </div>
+    <select id="brands-category" class="filter-select">
+      <option value="">All categories</option>
+    </select>
+    <select id="brands-sort" class="filter-select">
+      <option value="avg_score">Avg score ↓</option>
+      <option value="openrepair_score">Fix rate ↓</option>
+      <option value="french_score">EU Index ↓</option>
+      <option value="yale_score">Yale reliability ↓</option>
+      <option value="ifixit_score">iFixit ↓</option>
+      <option value="num_sources">Most sources ↓</option>
+      <option value="brand">Brand A–Z</option>
+    </select>
+    <div class="brands-count" id="brands-count"></div>
+  </div>
+
+  <div class="brands-legend">
+    <span class="legend-item"><span class="legend-dot" style="background:#1d4ed8"></span>🇫🇷 EU Index</span>
+    <span class="legend-item"><span class="legend-dot" style="background:#0891b2"></span>🔨 Fix Rate</span>
+    <span class="legend-item"><span class="legend-dot" style="background:#059669"></span>🏠 Yale</span>
+    <span class="legend-item"><span class="legend-dot" style="background:#e05b2a"></span>🔧 iFixit</span>
+    <span class="legend-item"><span class="legend-dot" style="background:#7c3aed"></span>♾️ BIFL</span>
+  </div>
+
+  <div class="brands-table-wrap">
+    <table class="brands-table" id="brands-table">
+      <thead>
+        <tr>
+          <th>Brand</th>
+          <th>Categories</th>
+          <th class="score-col">🇫🇷 EU Index</th>
+          <th class="score-col">🔨 Fix Rate</th>
+          <th class="score-col">🏠 Yale</th>
+          <th class="score-col">🔧 iFixit</th>
+          <th class="score-col">♾️ BIFL</th>
+          <th class="score-col">Avg</th>
+        </tr>
+      </thead>
+      <tbody id="brands-tbody">
+        <tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text3)">Loading…</td></tr>
+      </tbody>
+    </table>
   </div>
 </div>
 

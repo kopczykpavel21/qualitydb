@@ -260,6 +260,113 @@ def query_stats():
     return dict(r)
 
 
+def query_competitor_brands():
+    """Return list of lowercase brand names that have any competitor scores."""
+    conn = sqlite3.connect(DB_PATH)
+    rows = conn.execute(
+        "SELECT DISTINCT LOWER(brand) FROM competitor_scores WHERE brand IS NOT NULL AND brand != ''"
+    ).fetchall()
+    conn.close()
+    return [r[0] for r in rows]
+
+
+def query_competitor_scores(brand: str):
+    """Return competitor scores for a given brand, grouped by source and category."""
+    import json as _json
+    if not brand or len(brand) < 2:
+        return []
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    rows = conn.execute("""
+        SELECT source, canonical_category, product_category,
+               ROUND(AVG(score_normalized), 1) as score,
+               COUNT(*) as n,
+               MAX(raw_score_label) as label,
+               MAX(source_url) as url,
+               MAX(sub_scores_json) as sub_scores_json
+        FROM competitor_scores
+        WHERE LOWER(brand) = LOWER(?)
+        GROUP BY source, canonical_category
+        ORDER BY source, canonical_category
+    """, (brand,)).fetchall()
+    conn.close()
+    result = []
+    for r in rows:
+        sub = None
+        try:
+            sub = _json.loads(r['sub_scores_json']) if r['sub_scores_json'] else None
+        except Exception:
+            pass
+        result.append({
+            "source": r["source"],
+            "category": r["canonical_category"] or r["product_category"],
+            "score": r["score"],
+            "n": r["n"],
+            "label": r["label"],
+            "url": r["url"],
+            "sub_scores": sub,
+        })
+    return result
+
+
+def query_brands(q="", category="", sort="avg_score"):
+    """Return brands with their aggregated competitor scores."""
+    import json as _json
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+
+    conditions = []
+    params = []
+    if q:
+        conditions.append("LOWER(brand) LIKE ?")
+        params.append(f"%{q.lower()}%")
+    if category:
+        conditions.append("canonical_category = ?")
+        params.append(category)
+
+    where = "WHERE " + " AND ".join(conditions) if conditions else ""
+
+    allowed_sort = {"avg_score", "brand", "num_sources", "french_score", "openrepair_score", "yale_score", "ifixit_score", "bifl_score"}
+    if sort not in allowed_sort:
+        sort = "avg_score"
+    sort_sql = "brand ASC" if sort == "brand" else f"COALESCE({sort}, -1) DESC"
+
+    rows = conn.execute(f"""
+        SELECT
+            brand,
+            COUNT(DISTINCT source) as num_sources,
+            COUNT(*) as total_records,
+            ROUND(AVG(score_normalized), 1) as avg_score,
+            ROUND(AVG(CASE WHEN source='french_index' THEN score_normalized END), 1) as french_score,
+            ROUND(AVG(CASE WHEN source='openrepair'   THEN score_normalized END), 1) as openrepair_score,
+            ROUND(AVG(CASE WHEN source='yale'         THEN score_normalized END), 1) as yale_score,
+            ROUND(AVG(CASE WHEN source='ifixit'       THEN score_normalized END), 1) as ifixit_score,
+            ROUND(AVG(CASE WHEN source='bifl'         THEN score_normalized END), 1) as bifl_score,
+            GROUP_CONCAT(DISTINCT canonical_category) as categories
+        FROM competitor_scores
+        {where}
+        GROUP BY brand
+        HAVING brand IS NOT NULL AND brand != '' AND LENGTH(brand) >= 2
+               AND total_records >= 2
+        ORDER BY {sort_sql}
+        LIMIT 300
+    """, params).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+
+def query_brand_categories():
+    """Return distinct canonical categories that appear in competitor_scores."""
+    conn = sqlite3.connect(DB_PATH)
+    rows = conn.execute(
+        "SELECT DISTINCT canonical_category FROM competitor_scores "
+        "WHERE canonical_category IS NOT NULL AND canonical_category != '' "
+        "ORDER BY canonical_category"
+    ).fetchall()
+    conn.close()
+    return [r[0] for r in rows]
+
+
 class Handler(BaseHTTPRequestHandler):
     def log_message(self, fmt, *args):
         pass  # silence access log
@@ -327,6 +434,22 @@ class Handler(BaseHTTPRequestHandler):
             with _scraper_lock:
                 _scraper_status["enabled"] = True
             self.send_json({"status": "resumed", "message": "Scraper resumed — will run on next schedule or use /api/run-scraper to trigger now."})
+
+        elif path == "/api/brands":
+            q      = params.get("q",        [""])[0].strip()
+            cat    = params.get("category", [""])[0].strip()
+            sort   = params.get("sort",     ["avg_score"])[0].strip()
+            self.send_json(query_brands(q, cat, sort))
+
+        elif path == "/api/brand-categories":
+            self.send_json(query_brand_categories())
+
+        elif path == "/api/competitor-scores":
+            brand = params.get("brand", [""])[0].strip()
+            self.send_json(query_competitor_scores(brand))
+
+        elif path == "/api/competitor-brands":
+            self.send_json(query_competitor_brands())
 
         elif path.startswith("/static/"):
             fname = path[len("/static/"):]

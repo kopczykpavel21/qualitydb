@@ -7,8 +7,17 @@ let debounceTimer = null;
 let isListView = false;
 let activeKeyword = "";
 let categoriesTree = [];   // [{main, subs:[{sub,count}]}]
+let competitorBrands = new Set();  // lowercase brand names with competitor data
 
 const SOURCE_LABELS = { alza: "Alza.cz", heureka: "Heureka.cz", zbozi: "Zbozi.cz", amazon: "Amazon.de" };
+
+const COMPETITOR_SOURCE_META = {
+  french_index: { label: "🇫🇷 EU Index",    color: "#1d4ed8", desc: "French Repairability Index (0–100)" },
+  ifixit:       { label: "🔧 iFixit",        color: "#e05b2a", desc: "iFixit Repairability Score (0–100)" },
+  yale:         { label: "🏠 Yale",          color: "#059669", desc: "Yale Appliance reliability score (0–100)" },
+  bifl:         { label: "♾️ BIFL",          color: "#7c3aed", desc: "Buy It For Life durability (0–100)" },
+  openrepair:   { label: "🔨 Fix Rate",      color: "#0891b2", desc: "Community repair fix rate (0–100)" },
+};
 
 // ---- State ----
 function getFilters() {
@@ -118,6 +127,14 @@ async function fetchStats() {
   document.getElementById("stat-stars").textContent = d.avg_stars ?? "—";
 }
 
+async function fetchCompetitorBrands() {
+  try {
+    const res = await fetch("/api/competitor-brands");
+    const brands = await res.json();
+    competitorBrands = new Set(brands);  // already lowercased on server
+  } catch(e) { /* silent — badge just won't show */ }
+}
+
 // ---- Render ----
 function starsVisual(rating) {
   if (!rating) return "—";
@@ -140,6 +157,13 @@ function recommendClass(val) {
   if (val >= 95) return "good";
   if (val >= 85) return "warn";
   return "bad";
+}
+
+function scoreColor(score) {
+  if (score === null || score === undefined) return "var(--text3)";
+  if (score >= 70) return "var(--green)";
+  if (score >= 45) return "var(--yellow)";
+  return "var(--red)";
 }
 
 function renderCard(p) {
@@ -176,9 +200,14 @@ function renderCard(p) {
     `<span class="kw-tag">${escHtml(k)}</span>`
   ).join("");
 
+  const brand = (p.Name || "").trim().split(/\s+/)[0].toLowerCase();
+  const extBadge = competitorBrands.has(brand)
+    ? `<span class="ext-badge" title="External ratings available">🌐 ext. ratings</span>`
+    : "";
+
   return `
   <div class="product-card" onclick="openModal(${JSON.stringify(JSON.stringify(p))})">
-    ${sourceBadge}
+    ${sourceBadge}${extBadge}
     <div class="card-category">${escHtml(p.Category || "")}</div>
     <div class="card-name">${escHtml(p.Name || "Unnamed")}</div>
     <div class="card-metrics">
@@ -291,6 +320,8 @@ function openModal(jsonStr) {
     </div>`;
   }).join("");
 
+  const keywords = p.keywords ? JSON.parse(p.keywords) : [];
+
   content.innerHTML = `
     <div class="modal-category">${escHtml(p.Category || "")}</div>
     <div class="modal-name">${escHtml(p.Name || "Unnamed")}</div>
@@ -334,12 +365,72 @@ function openModal(jsonStr) {
       </div>
     </div>` : ""}
 
+    <div id="competitor-scores-section" class="competitor-section">
+      <div class="competitor-section-title">🌐 External ratings</div>
+      <div id="competitor-scores-body" class="competitor-loading">Loading…</div>
+    </div>
+
     <div class="modal-actions">
       ${p.ProductURL ? `<a class="btn-primary" href="${escHtml(p.ProductURL)}" target="_blank">View on ${SOURCE_LABELS[p.source] || "Shop"} →</a>` : ""}
       <button class="btn-secondary" onclick="closeModal()">Close</button>
     </div>`;
 
   overlay.classList.add("open");
+
+  // Async: fetch competitor scores for this product's brand
+  const brand = (p.Name || "").trim().split(/\s+/)[0];
+  if (brand && brand.length >= 2) {
+    fetch(`/api/competitor-scores?brand=${encodeURIComponent(brand)}`)
+      .then(r => r.json())
+      .then(scores => renderCompetitorScores(scores, p.Category))
+      .catch(() => {
+        const el = document.getElementById("competitor-scores-body");
+        if (el) el.innerHTML = '<span class="competitor-none">No external data</span>';
+      });
+  } else {
+    const el = document.getElementById("competitor-scores-body");
+    if (el) el.innerHTML = '<span class="competitor-none">No external data</span>';
+  }
+}
+
+function renderCompetitorScores(scores, productCategory) {
+  const el = document.getElementById("competitor-scores-body");
+  if (!el) return;
+
+  if (!scores || scores.length === 0) {
+    el.innerHTML = '<span class="competitor-none">No external ratings found for this brand</span>';
+    return;
+  }
+
+  // Group by source
+  const bySource = {};
+  for (const s of scores) {
+    if (!bySource[s.source]) bySource[s.source] = [];
+    bySource[s.source].push(s);
+  }
+
+  const html = Object.entries(bySource).map(([source, items]) => {
+    const meta = COMPETITOR_SOURCE_META[source] || { label: source, color: "#6b7280", desc: "" };
+    const rows = items.map(item => {
+      const bar = Math.round(item.score);
+      return `
+        <div class="comp-row">
+          <div class="comp-category">${escHtml(item.category)}</div>
+          <div class="comp-bar-wrap">
+            <div class="comp-bar" style="width:${bar}%;background:${scoreColor(item.score)}"></div>
+          </div>
+          <div class="comp-score" style="color:${scoreColor(item.score)}">${item.score}</div>
+          <div class="comp-n">(n=${item.n})</div>
+        </div>`;
+    }).join("");
+    return `
+      <div class="comp-source-block">
+        <div class="comp-source-name" style="color:${meta.color}" title="${meta.desc}">${meta.label}</div>
+        ${rows}
+      </div>`;
+  }).join("");
+
+  el.innerHTML = html;
 }
 
 function closeModal() {
@@ -361,11 +452,119 @@ function debouncedSearch() {
   debounceTimer = setTimeout(triggerSearch, 350);
 }
 
+// ---- BRANDS TAB ----
+
+function switchTab(tab) {
+  const isProducts = tab === 'products';
+  document.getElementById('tab-products').classList.toggle('active', isProducts);
+  document.getElementById('tab-brands').classList.toggle('active', !isProducts);
+
+  // Show/hide the main layout and brands panel
+  document.querySelector('.layout').style.display     = isProducts ? '' : 'none';
+  document.querySelector('.mobile-filter-btn').style.display = isProducts ? '' : 'none';
+  document.getElementById('brands-panel').style.display     = isProducts ? 'none' : '';
+  document.getElementById('pagination').style.display       = isProducts ? '' : 'none';
+
+  if (!isProducts) loadBrandsTab();
+}
+
+let brandsLoaded = false;
+
+async function loadBrandsTab() {
+  // Populate category dropdown once
+  if (!brandsLoaded) {
+    try {
+      const res = await fetch('/api/brand-categories');
+      const cats = await res.json();
+      const sel = document.getElementById('brands-category');
+      sel.innerHTML = '<option value="">All categories</option>' +
+        cats.map(c => `<option value="${escHtml(c)}">${escHtml(c)}</option>`).join('');
+    } catch(e) {}
+
+    document.getElementById('brands-search').addEventListener('input', debounceLoadBrands);
+    document.getElementById('brands-category').addEventListener('change', fetchBrands);
+    document.getElementById('brands-sort').addEventListener('change', fetchBrands);
+    brandsLoaded = true;
+  }
+  fetchBrands();
+}
+
+let brandsDebounce = null;
+function debounceLoadBrands() {
+  clearTimeout(brandsDebounce);
+  brandsDebounce = setTimeout(fetchBrands, 300);
+}
+
+async function fetchBrands() {
+  document.getElementById('brands-tbody').innerHTML =
+    '<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text3)">Loading…</td></tr>';
+
+  const q    = document.getElementById('brands-search').value.trim();
+  const cat  = document.getElementById('brands-category').value;
+  const sort = document.getElementById('brands-sort').value;
+  const params = new URLSearchParams({ q, category: cat, sort });
+
+  try {
+    const res = await fetch(`/api/brands?${params}`);
+    const brands = await res.json();
+    renderBrands(brands);
+  } catch(e) {
+    document.getElementById('brands-tbody').innerHTML =
+      '<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text3)">Error loading data</td></tr>';
+  }
+}
+
+function scoreBadge(val) {
+  if (val === null || val === undefined) return '<span class="brand-score brand-score-none">—</span>';
+  const cls = val >= 70 ? 'good' : val >= 45 ? 'warn' : 'bad';
+  const bar = Math.round(val);
+  return `<span class="brand-score brand-score-${cls}">
+    <span class="brand-bar" style="width:${bar}%"></span>
+    <span class="brand-score-val">${val}</span>
+  </span>`;
+}
+
+function renderBrands(brands) {
+  const tbody = document.getElementById('brands-tbody');
+  document.getElementById('brands-count').textContent = `${brands.length} brands`;
+
+  if (!brands.length) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text3)">No brands found</td></tr>';
+    return;
+  }
+
+  const rows = brands.map(b => {
+    const cats = b.categories
+      ? b.categories.split(',').filter(Boolean).slice(0, 3).map(c =>
+          `<span class="brand-cat-tag">${escHtml(c.trim())}</span>`).join('')
+      : '';
+    const sourceDots = b.num_sources >= 3 ? '●●●' : b.num_sources === 2 ? '●●○' : '●○○';
+    return `<tr>
+      <td>
+        <div class="brand-name-cell">
+          <span class="brand-name">${escHtml(b.brand)}</span>
+          <span class="brand-sources" title="${b.num_sources} sources, ${b.total_records} records">${sourceDots}</span>
+        </div>
+      </td>
+      <td><div class="brand-cats">${cats}</div></td>
+      <td>${scoreBadge(b.french_score)}</td>
+      <td>${scoreBadge(b.openrepair_score)}</td>
+      <td>${scoreBadge(b.yale_score)}</td>
+      <td>${scoreBadge(b.ifixit_score)}</td>
+      <td>${scoreBadge(b.bifl_score)}</td>
+      <td>${scoreBadge(b.avg_score)}</td>
+    </tr>`;
+  }).join('');
+
+  tbody.innerHTML = rows;
+}
+
 // ---- Event listeners ----
 document.addEventListener("DOMContentLoaded", () => {
   fetchStats();
   fetchCategories();
   fetchKeywords();
+  fetchCompetitorBrands();
   fetchProducts();
 
   // Search
