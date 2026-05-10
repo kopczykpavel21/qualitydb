@@ -117,6 +117,8 @@ def run_scraper(name: str) -> dict:
             from scraper_looria import scrape
         elif name == "openrepair":
             from scraper_openrepair import scrape
+        elif name == "eprel":
+            from scraper_eprel import scrape
         else:
             result["status"] = "unknown"
             result["error"] = f"Unknown scraper: {name}"
@@ -139,12 +141,12 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Run competitor data scrapers")
     parser.add_argument(
         "--only", nargs="+",
-        choices=["french_index", "ifixit", "bifl", "yale", "looria", "openrepair"],
+        choices=["french_index", "ifixit", "bifl", "yale", "looria", "openrepair", "eprel"],
         help="Run only these scrapers",
     )
     parser.add_argument(
         "--skip", nargs="+",
-        choices=["french_index", "ifixit", "bifl", "yale", "looria", "openrepair"],
+        choices=["french_index", "ifixit", "bifl", "yale", "looria", "openrepair", "eprel"],
         help="Skip these scrapers",
     )
     parser.add_argument(
@@ -162,7 +164,8 @@ def main() -> None:
 
     # Determine which scrapers to run
     # Ordered by priority / reliability (safest first)
-    all_scrapers = ["french_index", "ifixit", "bifl", "yale", "looria", "openrepair"]
+    # eprel: official EU REST API — no scraping, very reliable; run last as it is slow
+    all_scrapers = ["french_index", "ifixit", "bifl", "yale", "looria", "openrepair", "eprel"]
 
     if args.only:
         scrapers = [s for s in all_scrapers if s in args.only]

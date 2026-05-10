@@ -76,6 +76,82 @@ CATEGORY_MAP = {
     # Pressure washer
     "nettoyeur haute pression": "Zahradní technika",
     "pressure washer":          "Zahradní technika",
+    # Monitors / displays
+    "monitor":              "Monitory",
+    "monitors":             "Monitory",
+    # Speakers / audio
+    "speaker":              "Reproduktory",
+    "speakers":             "Reproduktory",
+    "bluetooth speaker":    "Reproduktory",
+    "bluetooth speakers":   "Reproduktory",
+    # Smartwatches / wearables
+    "smartwatch":           "Chytré hodinky",
+    "smartwatches":         "Chytré hodinky",
+    # Keyboards / mice (peripherals)
+    "keyboard":             "Klávesnice",
+    "keyboards":            "Klávesnice",
+    "mouse":                "Myši",
+    "mice":                 "Myši",
+    # SSD / storage
+    "ssd":                  "SSD disky",
+    "internal ssd":         "SSD disky",
+    # Air conditioners
+    "air conditioner":      "Klimatizace",
+    "air conditioners":     "Klimatizace",
+    "air conditioning unit": "Klimatizace",
+    "air conditioning units": "Klimatizace",
+    # Air purifiers
+    "air purifier":         "Čističky vzduchu",
+    "air purifiers":        "Čističky vzduchu",
+    # Robot vacuums
+    "robot vacuum":         "Robotické vysavače",
+    "robot vacuums":        "Robotické vysavače",
+    "robotstofzuiger":      "Robotické vysavače",
+    # Water heaters / boilers (EPREL)
+    "water heater":         "Ohřívače vody",
+    "water heaters":        "Ohřívače vody",
+    # Space heaters (EPREL)
+    "space heater":         "Topení",
+    "space heaters":        "Topení",
+    # Light sources (EPREL)
+    "light source":         "Osvětlení",
+    "light sources":        "Osvětlení",
+    # Ventilation (EPREL)
+    "ventilation unit":     "Větrání",
+    "ventilation units":    "Větrání",
+    # Dutch (Coolblue / Bol)
+    "televisies":           "Televize",
+    "smartphones":          "Smartphony",
+    "laptops":              "Notebooky",
+    "tablets":              "Tablety",
+    "hoofdtelefoons":       "Sluchátka",
+    "smartwatches":         "Chytré hodinky",
+    "monitoren":            "Monitory",
+    "wasmachines":          "Pračky",
+    "vaatwassers":          "Myčky",
+    "koelkasten":           "Ledničky",
+    "koffiezetapparaten":   "Kávovary",
+    "stofzuigers":          "Vysavače",
+    "luchtreiniger":        "Čističky vzduchu",
+    # Danish (Pricerunner)
+    "fladskjermsfjernsyn":  "Televize",
+    "mobiltelefoner":       "Smartphony",
+    "barbaercomputere":     "Notebooky",
+    "hovedtelefoner":       "Sluchátka",
+    "vaskemaskiner":        "Pračky",
+    "opvaskemaskiner":      "Myčky",
+    "koleskabe":            "Ledničky",
+    "kaffemaskiner":        "Kávovary",
+    "stovsuger":            "Vysavače",
+    "robotstovsuger":       "Robotické vysavače",
+    "luftrenere":           "Čističky vzduchu",
+    # German / Austrian (Geizhals)
+    "staubsauger":          "Vysavače",
+    "robotstaubsauger":     "Robotické vysavače",
+    "espresso":             "Kávovary",
+    "tastatur":             "Klávesnice",
+    "maus":                 "Myši",
+    "kuehlschraenke":       "Ledničky",
 }
 
 
