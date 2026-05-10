@@ -544,3 +544,67 @@
 2026-03-11 22:38:18  INFO     ============================================================
 2026-03-11 22:38:18  INFO     Run complete — 111 new products added across 14 categories.
 2026-03-11 22:38:18  INFO     ============================================================
+2026-05-10 11:56:32  INFO     ============================================================
+2026-05-10 11:56:32  INFO     QualityDB Heureka Scraper — starting run
+2026-05-10 11:56:32  INFO     ============================================================
+2026-05-10 11:56:32  INFO     Warming up session (visiting homepage)…
+2026-05-10 11:56:33  WARNING  Session warmup failed (HTTP Error 403: ) — will try scraping anyway.
+2026-05-10 11:56:34  INFO     ── TVs  (https://televize.heureka.cz)
+2026-05-10 11:56:34  INFO        Page 1: https://televize.heureka.cz/?sort=rating
+2026-05-10 11:56:35  WARNING    Request failed: HTTP Error 403: 
+2026-05-10 11:56:35  INFO        No products returned — stopping.
+2026-05-10 11:56:36  INFO     ── Headphones  (https://sluchatka-reproduktory-handsfree.heureka.cz/sluchatka)
+2026-05-10 11:56:36  INFO        Page 1: https://sluchatka-reproduktory-handsfree.heureka.cz/sluchatka/?sort=rating
+2026-05-10 11:56:37  WARNING    Request failed: HTTP Error 403: 
+2026-05-10 11:56:37  INFO        No products returned — stopping.
+2026-05-10 11:56:38  INFO     ── Speakers  (https://sluchatka-reproduktory-handsfree.heureka.cz/reproduktory)
+2026-05-10 11:56:38  INFO        Page 1: https://sluchatka-reproduktory-handsfree.heureka.cz/reproduktory/?sort=rating
+2026-05-10 11:56:38  WARNING    Request failed: HTTP Error 403: 
+2026-05-10 11:56:38  INFO        No products returned — stopping.
+2026-05-10 11:56:40  INFO     ── Mice  (https://pocitace-notebooky.heureka.cz/mysi)
+2026-05-10 11:56:40  INFO        Page 1: https://pocitace-notebooky.heureka.cz/mysi/?sort=rating
+2026-05-10 11:56:40  WARNING    Request failed: HTTP Error 403: 
+2026-05-10 11:56:40  INFO        No products returned — stopping.
+2026-05-10 11:56:41  INFO     ── Keyboards  (https://pocitace-notebooky.heureka.cz/klavesnice)
+2026-05-10 11:56:41  INFO        Page 1: https://pocitace-notebooky.heureka.cz/klavesnice/?sort=rating
+2026-05-10 11:56:41  WARNING    Request failed: HTTP Error 403: 
+2026-05-10 11:56:41  INFO        No products returned — stopping.
+2026-05-10 11:56:43  INFO     ── Laptop Accessories  (https://pocitace-notebooky.heureka.cz/prislusenstvi-k-notebookum)
+2026-05-10 11:56:43  INFO        Page 1: https://pocitace-notebooky.heureka.cz/prislusenstvi-k-notebookum/?sort=rating
+2026-05-10 11:56:43  WARNING    Request failed: HTTP Error 403: 
+2026-05-10 11:56:43  INFO        No products returned — stopping.
+2026-05-10 11:56:44  INFO     ── SSD  (https://pocitace-notebooky.heureka.cz/ssd-disky)
+2026-05-10 11:56:44  INFO        Page 1: https://pocitace-notebooky.heureka.cz/ssd-disky/?sort=rating
+2026-05-10 11:56:44  WARNING    Request failed: HTTP Error 403: 
+2026-05-10 11:56:44  INFO        No products returned — stopping.
+2026-05-10 11:56:46  INFO     ── RAM  (https://pocitace-notebooky.heureka.cz/operacni-pameti)
+2026-05-10 11:56:46  INFO        Page 1: https://pocitace-notebooky.heureka.cz/operacni-pameti/?sort=rating
+2026-05-10 11:56:46  WARNING    Request failed: HTTP Error 403: 
+2026-05-10 11:56:46  INFO        No products returned — stopping.
+2026-05-10 11:56:47  INFO     ── Smartwatches  (https://chytre-hodinky-a-fitness-naramky.heureka.cz)
+2026-05-10 11:56:47  INFO        Page 1: https://chytre-hodinky-a-fitness-naramky.heureka.cz/?sort=rating
+2026-05-10 11:56:48  WARNING    Request failed: HTTP Error 403: 
+2026-05-10 11:56:48  INFO        No products returned — stopping.
+2026-05-10 11:56:49  INFO     ── Kitchen Appliances  (https://bile-zbozi.heureka.cz/male-spotrebice)
+2026-05-10 11:56:49  INFO        Page 1: https://bile-zbozi.heureka.cz/male-spotrebice/?sort=rating
+2026-05-10 11:56:50  WARNING    Request failed: HTTP Error 403: 
+2026-05-10 11:56:50  INFO        No products returned — stopping.
+2026-05-10 11:56:51  INFO     ── Vacuum Cleaners  (https://bile-zbozi.heureka.cz/vysavace)
+2026-05-10 11:56:51  INFO        Page 1: https://bile-zbozi.heureka.cz/vysavace/?sort=rating
+2026-05-10 11:56:51  WARNING    Request failed: HTTP Error 403: 
+2026-05-10 11:56:51  INFO        No products returned — stopping.
+2026-05-10 11:56:53  INFO     ── Coffee Machines  (https://bile-zbozi.heureka.cz/kavovary)
+2026-05-10 11:56:53  INFO        Page 1: https://bile-zbozi.heureka.cz/kavovary/?sort=rating
+2026-05-10 11:56:53  WARNING    Request failed: HTTP Error 403: 
+2026-05-10 11:56:53  INFO        No products returned — stopping.
+2026-05-10 11:56:54  INFO     ── Air Purifiers  (https://bile-zbozi.heureka.cz/cisticky-vzduchu)
+2026-05-10 11:56:54  INFO        Page 1: https://bile-zbozi.heureka.cz/cisticky-vzduchu/?sort=rating
+2026-05-10 11:56:54  WARNING    Request failed: HTTP Error 403: 
+2026-05-10 11:56:54  INFO        No products returned — stopping.
+2026-05-10 11:56:56  INFO     ── Cables & Hubs  (https://pocitace-notebooky.heureka.cz/kabely-redukce)
+2026-05-10 11:56:56  INFO        Page 1: https://pocitace-notebooky.heureka.cz/kabely-redukce/?sort=rating
+2026-05-10 11:56:56  WARNING    Request failed: HTTP Error 403: 
+2026-05-10 11:56:56  INFO        No products returned — stopping.
+2026-05-10 11:56:57  INFO     ============================================================
+2026-05-10 11:56:57  INFO     Run complete — 0 new products added across 14 categories.
+2026-05-10 11:56:57  INFO     ============================================================
