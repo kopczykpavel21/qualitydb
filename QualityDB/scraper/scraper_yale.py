@@ -57,7 +57,7 @@ CATEGORY_KEYWORDS = {
 }
 
 
-def _try_get(url: str) -> str | None:
+def _try_get(url: str) -> object:
     """Attempt GET with curl_cffi (Chrome TLS fingerprint), fall back to requests."""
     # Try curl_cffi first
     try:
@@ -108,7 +108,7 @@ def _extract_year_from_url(url: str) -> str:
     return m.group(1) if m else "2024"
 
 
-def _parse_service_rate(text: str) -> float | None:
+def _parse_service_rate(text: str) -> object:
     """Extract a percentage like '4.5%' or '4.5' from text."""
     m = re.search(r'(\d+(?:\.\d+)?)\s*%', text)
     if m:

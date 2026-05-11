@@ -45,7 +45,7 @@ def _make_product_id(product_id: str, manufacturer_id: str) -> str:
     return hashlib.md5(key.encode()).hexdigest()[:20]
 
 
-def _parse_score(val: str) -> float | None:
+def _parse_score(val: str) -> object:
     """Parse '8.3' or '8,3' or '' into float."""
     if not val or str(val).strip() in ("", "-", "N/A", "NA", "None"):
         return None

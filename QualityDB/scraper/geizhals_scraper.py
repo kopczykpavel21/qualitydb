@@ -136,6 +136,15 @@ def fetch_page(slug: str, page: int, session) -> list[dict]:
         log.warning(f"  Fetch failed ({e})")
         return []
 
+    # Detect Cloudflare JS challenge page (returns 403 with challenge HTML)
+    if resp.status_code == 403 or "Sichere Verbindung" in resp.text or "Just a moment" in resp.text:
+        log.error(
+            "Geizhals.at is protected by a Cloudflare JS challenge that cannot be "
+            "bypassed with curl_cffi alone. Use Playwright + stealth plugin to scrape "
+            "this site: pip install playwright playwright-stealth"
+        )
+        return []
+
     soup = BeautifulSoup(resp.text, "html.parser")
     products = []
 

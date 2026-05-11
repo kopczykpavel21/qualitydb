@@ -151,7 +151,15 @@ def fetch_page(slug: str, page: int, session) -> list[dict]:
     )
 
     if not items:
-        log.debug("  No product cards found — possibly last page or layout change.")
+        # Check if this is a JS-rendered page (Coolblue uses React, no SSR for product lists)
+        if resp.text and len(resp.text) > 10000 and "react" in resp.text.lower():
+            log.warning(
+                "Coolblue product listings are client-side rendered by React. "
+                "Static HTML scraping cannot access the product data. "
+                "Use Playwright for this scraper: pip install playwright"
+            )
+        else:
+            log.debug("  No product cards found — possibly last page or layout change.")
         return []
 
     for item in items:

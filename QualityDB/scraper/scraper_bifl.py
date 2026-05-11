@@ -61,7 +61,7 @@ def _get_all_product_urls(session: requests.Session) -> list[str]:
     return urls
 
 
-def _scrape_product_page(session: requests.Session, url: str) -> dict | None:
+def _scrape_product_page(session: requests.Session, url: str) -> object:
     """Scrape one BIFL product page. Returns a record dict or None."""
     try:
         resp = session.get(url, timeout=REQUEST_TIMEOUT)

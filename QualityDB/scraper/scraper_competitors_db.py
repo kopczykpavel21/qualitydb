@@ -107,7 +107,7 @@ def upsert_record(record: dict[str, Any]) -> None:
         conn.execute(sql, defaults)
 
 
-def count_records(source: str | None = None) -> int:
+def count_records(source=None) -> int:
     with get_conn() as conn:
         if source:
             row = conn.execute(

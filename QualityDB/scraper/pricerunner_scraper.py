@@ -43,32 +43,31 @@ DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "products.db"
 
 # ── Thresholds ────────────────────────────────────────────────────────────────
 MIN_STARS     = 4.0    # Minimum average star rating (out of 5)
-MIN_REVIEWS   = 10     # Minimum review count
+MIN_REVIEWS   = 0      # Pricerunner doesn't show review count on listing pages
 STOP_BELOW    = 3.8    # Stop category when stars drop below this
 MAX_PAGES     = 6      # Max pages per category
-REQUEST_DELAY = 2.0    # Seconds between requests
+REQUEST_DELAY = 2.5    # Seconds between requests (site is rate-sensitive)
 
 # ── Category list ─────────────────────────────────────────────────────────────
-# Pricerunner category URLs follow the pattern:
-#   https://www.pricerunner.dk/cl/{id}-{slug}/?sortByPreset=BEST_RATED&page={N}
-# The numeric prefix is the category ID used by Pricerunner internally.
+# Pricerunner category URLs: https://www.pricerunner.dk/cl/{id}/{name}
+# IDs verified live May 2026 by checking /pl/{id}-... links in search results.
 CATEGORIES = [
-    {"name": "TVs",              "slug": "33-Fladskjermsfjernsyn"},
-    {"name": "Smartphones",      "slug": "1-Mobiltelefoner"},
-    {"name": "Laptops",          "slug": "16-Barbaercomputere"},
-    {"name": "Tablets",          "slug": "38-Tablets"},
-    {"name": "Headphones",       "slug": "79-Hovedtelefoner"},
-    {"name": "Smartwatches",     "slug": "574-Smartwatches"},
-    {"name": "Speakers",         "slug": "80-Bluetooth-hojttalere"},
-    {"name": "Monitors",         "slug": "37-Skaerme"},
-    {"name": "Washing Machines", "slug": "58-Vaskemaskiner"},
-    {"name": "Dishwashers",      "slug": "60-Opvaskemaskiner"},
-    {"name": "Refrigerators",    "slug": "56-Koleskabe"},
-    {"name": "Coffee Machines",  "slug": "97-Kaffemaskiner"},
-    {"name": "Vacuum Cleaners",  "slug": "69-Stovsuger"},
-    {"name": "Robot Vacuums",    "slug": "379-Robotstovsuger"},
-    {"name": "SSD",              "slug": "1302-SSD-drev"},
-    {"name": "Air Purifiers",    "slug": "1138-Luftrenere"},
+    {"name": "TVs",              "slug": "2/TV"},
+    {"name": "Smartphones",      "slug": "1/Mobiltelefoner"},
+    {"name": "Laptops",          "slug": "27/Baerbar"},
+    {"name": "Tablets",          "slug": "224/Tablets"},
+    {"name": "Headphones",       "slug": "94/Hoeretelefoner"},
+    {"name": "Smartwatches",     "slug": "1438/Wearables"},
+    {"name": "Speakers",         "slug": "267/Bluetooth-hojttalere"},
+    {"name": "Monitors",         "slug": "25/Skaerme"},
+    {"name": "Washing Machines", "slug": "14/Vaskemaskiner"},
+    {"name": "Dishwashers",      "slug": "13/Opvaskemaskiner"},
+    {"name": "Refrigerators",    "slug": "18/Koeleskabe"},
+    {"name": "Coffee Machines",  "slug": "82/Kaffemaskiner"},
+    {"name": "Vacuum Cleaners",  "slug": "19/Stoevsugere"},
+    {"name": "Robot Vacuums",    "slug": "1613/Robotstoevsugere"},
+    {"name": "SSD",              "slug": "36/SSD"},
+    {"name": "Air Purifiers",    "slug": "453/Indeklima"},
 ]
 
 BASE_URL = "https://www.pricerunner.dk"
@@ -133,7 +132,7 @@ def _parse_price_dkk(text: str):
 
 def fetch_page(slug: str, page: int, session) -> list[dict]:
     """Fetch one category page and return list of raw product dicts."""
-    url = f"{BASE_URL}/cl/{slug}/?sortByPreset=BEST_RATED&page={page}"
+    url = f"{BASE_URL}/cl/{slug}?sortByPreset=BEST_RATED&page={page}"
     try:
         resp = session.get(url, headers=EXTRA_HEADERS, timeout=25)
         resp.raise_for_status()
@@ -144,63 +143,45 @@ def fetch_page(slug: str, page: int, session) -> list[dict]:
     soup = BeautifulSoup(resp.text, "html.parser")
     products = []
 
-    # Pricerunner product items appear in elements with class "product-card"
-    # or inside the product list container.
-    items = (
-        soup.select("[class*='ProductCard']")
-        or soup.select("[class*='product-card']")
-        or soup.select("[data-testid='product-card']")
-        or soup.select("li[class*='product']")
-    )
+    # Product links: each /pl/ anchor contains all product info as text nodes.
+    # Structure (verified May 2026):
+    #   parts[0]  = "N+ overvåger" or absent   (watcher count)
+    #   parts[1]  = product name                (longest text node)
+    #   parts[?]  = "X,X"                       (rating, if reviews exist)
+    #   parts[?]  = specs string                (RAM, SSD, etc.)
+    #   parts[-?] = "X.XXX kr."                 (price)
+    links = soup.select("a[href*='/pl/']")
 
-    if not items:
-        log.debug("  No product items found — possibly last page or layout change.")
+    if not links:
+        log.debug("  No product links found — possibly last page or layout change.")
         return []
 
-    for item in items:
-        # ── Name ──────────────────────────────────────────────────────────────
-        name_el = (
-            item.select_one("a[class*='product-name']")
-            or item.select_one("[class*='ProductTitle'] a")
-            or item.select_one("[class*='product-title'] a")
-            or item.select_one("h2 a")
-            or item.select_one("h3 a")
-            or item.select_one("a[href*='/pl/']")
-        )
-        name = name_el.get_text(strip=True) if name_el else ""
-        href = name_el.get("href", "") if name_el else ""
+    for link in links:
+        href = link.get("href", "")
         url_product = (BASE_URL + href) if href.startswith("/") else href
 
-        # ── Stars ─────────────────────────────────────────────────────────────
-        stars_el = (
-            item.select_one("[aria-label*='ud af 5']")
-            or item.select_one("[aria-label*='stjerner']")
-            or item.select_one("[class*='RatingStars']")
-            or item.select_one("[class*='rating']")
-        )
-        stars_text = ""
-        if stars_el:
-            stars_text = (
-                stars_el.get("aria-label")
-                or stars_el.get("title")
-                or stars_el.get_text()
-            )
-        stars = _parse_stars(stars_text)
+        parts = [t.strip() for t in link.stripped_strings if t.strip()]
 
-        # ── Reviews ───────────────────────────────────────────────────────────
-        reviews_el = (
-            item.select_one("[class*='review-count']")
-            or item.select_one("[class*='RatingCount']")
-            or item.select_one("[class*='anmeldelser']")
-        )
-        reviews = _parse_reviews(reviews_el.get_text() if reviews_el else "")
+        # Name: first part that's longer than 10 chars and not "N+ overvåger"
+        name = ""
+        for p in parts:
+            if len(p) > 10 and "overvåger" not in p and "butikker" not in p:
+                name = p
+                break
 
-        # ── Price ─────────────────────────────────────────────────────────────
-        price_el = (
-            item.select_one("[class*='Price']")
-            or item.select_one("[class*='price']")
-        )
-        price_dkk = _parse_price_dkk(price_el.get_text() if price_el else "")
+        # Rating: standalone "X,X" or "X.X" token (exactly 3 chars like "4,8")
+        stars = None
+        for p in parts:
+            if re.match(r"^\d[,.]\d$", p):
+                stars = float(p.replace(",", "."))
+                break
+
+        # Price: token ending with "kr."
+        price_dkk = None
+        for p in parts:
+            if "kr." in p:
+                price_dkk = _parse_price_dkk(p)
+                break
 
         if name:
             products.append({
@@ -208,8 +189,8 @@ def fetch_page(slug: str, page: int, session) -> list[dict]:
                 "ProductURL":        url_product,
                 "Stars":             stars,
                 "RecommendRate_pct": round((stars / 5.0) * 100, 1) if stars else None,
-                "ReviewsCount":      reviews,
-                "Price_CZK":         price_dkk,  # stored as DKK, label is a misnomer
+                "ReviewsCount":      0,  # not shown on listing page
+                "Price_CZK":         price_dkk,
             })
 
     return products
@@ -257,7 +238,7 @@ def scrape_category(cat: dict, session, conn) -> int:
     cat_name = cat["name"]
     total    = 0
 
-    log.info(f"── {cat_name}  (/cl/{slug}/)")
+    log.info(f"── {cat_name}  (/cl/{slug})")
 
     for page in range(1, MAX_PAGES + 1):
         log.info(f"   Page {page}")

@@ -148,7 +148,15 @@ def fetch_page(cat: dict, page: int, session) -> list[dict]:
     )
 
     if not items:
-        log.debug("  No product items found — possibly last page or layout change.")
+        # Bol.com uses Remix with client-side rendering — product lists are not in static HTML
+        if resp.text and "__remixContext" in resp.text or "reactRouterContext" in resp.text:
+            log.warning(
+                "Bol.com product listings are rendered via Remix/React on the client. "
+                "Static HTML scraping cannot access product data. "
+                "Use Playwright for this scraper: pip install playwright"
+            )
+        else:
+            log.debug("  No product items found — possibly last page or layout change.")
         return []
 
     for item in items:

@@ -60,7 +60,7 @@ def _extract_brand(name: str) -> str:
     return name.strip().split()[0].title() if name.strip() else ""
 
 
-def _parse_score(text: str) -> float | None:
+def _parse_score(text: str) -> object:
     m = re.search(r'(\d+(?:\.\d+)?)\s*/\s*10', text)
     if m:
         return float(m.group(1))
@@ -74,7 +74,7 @@ def _parse_score(text: str) -> float | None:
     return None
 
 
-def _try_playwright(url: str) -> str | None:
+def _try_playwright(url: str) -> object:
     """Try to fetch page with Playwright (headless Chromium)."""
     try:
         from playwright.sync_api import sync_playwright
@@ -101,7 +101,7 @@ def _try_playwright(url: str) -> str | None:
         return None
 
 
-def _get_page_html(session: requests.Session, url: str, use_playwright_fallback: bool = True) -> str | None:
+def _get_page_html(session: requests.Session, url: str, use_playwright_fallback: bool = True) -> object:
     """Fetch page HTML. Tries plain requests first, then Playwright."""
     try:
         resp = session.get(url, timeout=REQUEST_TIMEOUT)

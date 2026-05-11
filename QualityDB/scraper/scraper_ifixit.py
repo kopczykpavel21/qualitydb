@@ -75,7 +75,7 @@ def _make_product_id(guideid: int) -> str:
     return f"ifixit_guide_{guideid}"
 
 
-def _extract_score_from_steps(steps: list) -> float | None:
+def _extract_score_from_steps(steps: list) -> object:
     """Scan guide steps (last 3) for a repairability score."""
     for step in reversed(steps[-3:]):
         # Check all line texts in the step

@@ -78,7 +78,11 @@ CATEGORIES = [
 
 GRAPHQL_URL = "https://www.digitec.ch/api/graphql"
 
-# GraphQL query for product search by category, sorted by rating
+# NOTE: The `productSearch` query field was removed from Digitec's GraphQL schema
+# (verified May 2026 — returns "Cannot query field 'productSearch' on type 'Query'").
+# To fix this scraper, open Digitec.ch in Chrome DevTools → Network → filter by
+# "graphql" → find the product listing request and copy the operation name and
+# query. Then replace PRODUCT_SEARCH_QUERY and the variables below.
 PRODUCT_SEARCH_QUERY = """
 query ProductSearch($categoryId: Int!, $offset: Int!, $limit: Int!) {
   productSearch(

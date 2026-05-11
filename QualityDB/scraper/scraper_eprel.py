@@ -57,6 +57,11 @@ from scraper_competitors_db import (
 )
 
 SOURCE   = "eprel"
+# NOTE: EPREL's public REST API now requires authentication (as of 2026).
+# The old /api/product/{category}?limit=N&offset=N endpoint returns 403/404.
+# Alternative: download bulk CSVs from the EU Open Data Portal:
+#   https://data.europa.eu/data/datasets/eprel
+# This scraper attempts the API anyway and logs a clear error if blocked.
 BASE_URL = "https://eprel.ec.europa.eu/api/product"
 LIMIT    = 50     # Max products per API call (EPREL hard limit is 50)
 DELAY    = max(REQUEST_DELAY, 1.5)
@@ -105,7 +110,7 @@ def _get(url: str) -> dict:
         return {}
 
 
-def _energy_class_to_score(raw_class: str) -> float | None:
+def _energy_class_to_score(raw_class: str) -> object:
     """Convert an EPREL energy efficiency class string to a 0–100 score."""
     if not raw_class:
         return None
