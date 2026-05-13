@@ -4,10 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Quality Product Database</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%232563eb'/><text x='50' y='72' font-size='58' text-anchor='middle' font-family='serif'>⭐</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/style.css" />
+  <!-- ↓ Set your Fly.io API URL here before deploying to Cloudflare Pages ↓ -->
+  <script>
+    window.__API_BASE  = "https://YOUR-APP-NAME.fly.dev";
+    window.__IR_SCORES = {};   // fetched async from /api/ir-data on first use
+    window.__FR_GOV    = [];
+  </script>
 </head>
 <body>
 
@@ -22,25 +27,9 @@
     <div class="header-stats" id="header-stats">
       <span class="stat-pill"><span id="stat-total">—</span> <span data-i18n="statProducts">products</span></span>
       <span class="stat-pill">⭐ <span id="stat-stars">—</span> <span data-i18n="statAvg">avg</span></span>
-      <button class="stat-pill status-health-btn" id="health-btn" title="Data freshness status">
-        <span id="health-indicator" style="color:#aaa">⬤</span> Sources
-      </button>
     </div>
   </div>
 </header>
-
-<!-- DATA HEALTH PANEL -->
-<div id="health-backdrop" class="sidebar-backdrop"></div>
-<div id="health-panel" class="health-panel" style="display:none">
-  <div class="health-panel-inner">
-    <div class="health-panel-header">
-      <span>📡 Data Source Status</span>
-      <button id="health-close" class="sidebar-close-btn">✕</button>
-    </div>
-    <div id="health-summary" class="health-summary"></div>
-    <div id="health-rows" class="health-rows">Loading…</div>
-  </div>
-</div>
 
 <!-- SEARCH BAR -->
 <div class="search-section">
@@ -105,8 +94,8 @@
       </div>
     </div>
 
-    <!-- Max Return Rate (Alza only — shown/hidden by JS) -->
-    <div class="filter-group" id="return-rate-group" style="display:none">
+    <!-- Max Return Rate -->
+    <div class="filter-group">
       <label class="filter-label" data-i18n="maxReturnRate">Max return rate</label>
       <div class="range-row">
         <input type="range" id="filter-return" min="0" max="1.4" step="0.1" value="1.4" />
@@ -145,12 +134,16 @@
         <optgroup label="🇨🇿 Czech Republic">
           <option value="alza"      data-market="CZ">Alza.cz</option>
           <option value="heureka"   data-market="CZ">Heureka.cz</option>
-          <option value="zbozi"     data-market="CZ">Zbozi.cz</option>          <option value="datart"    data-market="CZ">Datart.cz</option>
+          <option value="zbozi"     data-market="CZ">Zbozi.cz</option>
+          <option value="dtest"     data-market="CZ">D-test.cz</option>
+          <option value="datart"    data-market="CZ">Datart.cz</option>
         </optgroup>
         <optgroup label="🇸🇰 Slovakia">
           <option value="heureka_sk" data-market="SK">Heureka.sk</option>
         </optgroup>
-        <optgroup label="🇩🇪 Germany">          <option value="otto"      data-market="DE">Otto.de</option>
+        <optgroup label="🇩🇪 Germany">
+          <option value="warentest" data-market="DE">Stiftung Warentest</option>
+          <option value="otto"      data-market="DE">Otto.de</option>
           <option value="amazon"    data-market="DE">Amazon.de</option>
           <option value="conrad"    data-market="DE">Conrad.de</option>
         </optgroup>
@@ -160,9 +153,6 @@
         </optgroup>
         <optgroup label="🇵🇱 Poland">
           <option value="ceneo"     data-market="PL">Ceneo.pl</option>
-        </optgroup>
-        <optgroup label="🇳🇱 Netherlands">
-          <option value="coolblue" data-market="NL">Coolblue.nl</option>
         </optgroup>
         <optgroup label="🌐 Global">
           <option value="amazon_us" data-market="US">Amazon.com (US)</option>
@@ -205,8 +195,6 @@
         <div class="view-toggle">
           <button class="view-btn active" id="view-grid" title="Grid view">⊞</button>
           <button class="view-btn" id="view-list" title="List view">☰</button>
-          <button class="view-btn" id="view-cross-market" title="Cross-market comparison">🌍</button>
-          <button class="view-btn" id="view-movers" title="Biggest rating changes">📈</button>
         </div>
       </div>
     </div>
@@ -222,43 +210,6 @@
     <!-- PAGINATION -->
     <div class="pagination" id="pagination"></div>
 
-    <!-- MOVERS VIEW (hidden by default, toggled by toolbar button) -->
-    <div id="movers-panel" style="display:none">
-      <div class="movers-toolbar">
-        <span class="movers-title">📈 Biggest Rating Changes</span>
-        <select id="movers-metric" class="filter-select" title="Metric to compare">
-          <option value="recommend">Recommend rate</option>
-          <option value="stars">Star rating</option>
-          <option value="price">Price (CZK)</option>
-        </select>
-        <select id="movers-days" class="filter-select" title="Comparison window">
-          <option value="7">vs. 1 week ago</option>
-          <option value="14">vs. 2 weeks ago</option>
-          <option value="24" selected>vs. ~1 month ago</option>
-          <option value="30">vs. 30 days ago</option>
-          <option value="60">vs. 60 days ago</option>
-          <option value="90">vs. 90 days ago</option>
-        </select>
-        <button id="movers-refresh-btn" class="star-btn" style="padding:4px 12px">Refresh</button>
-        <span id="movers-status" style="font-size:0.8em;color:#888"></span>
-      </div>
-      <div id="movers-grid"></div>
-    </div>
-
-    <!-- CROSS-MARKET VIEW (hidden by default, toggled by toolbar button) -->
-    <div id="cross-market-panel" style="display:none">
-      <div class="cross-market-toolbar">
-        <span class="cross-market-title">🌍 Cross-Market Product Matches</span>
-        <select id="cm-min-markets" class="filter-select" title="Minimum markets">
-          <option value="2">2+ markets</option>
-          <option value="3">3+ markets</option>
-        </select>
-        <button id="cm-refresh-btn" class="star-btn" style="padding:4px 12px">Refresh</button>
-        <span id="cm-status" style="font-size:0.8em;color:#888"></span>
-      </div>
-      <div id="cross-market-grid"></div>
-    </div>
-
   </main>
 </div>
 
@@ -267,10 +218,6 @@
   <div class="modal" id="modal">
     <button class="modal-close" id="modal-close">✕</button>
     <div class="modal-content" id="modal-content"></div>
-    <div class="modal-history" id="modal-history" style="display:none">
-      <div class="modal-history-title">📈 Rating history</div>
-      <div id="modal-history-chart"></div>
-    </div>
   </div>
 </div>
 
